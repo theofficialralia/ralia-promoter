@@ -102,6 +102,7 @@ export type Offer = {
   fee_minor: number;
   expires_at: string;
   status: string;
+  fit_pct: number | null;
 };
 
 export type Assignment = {

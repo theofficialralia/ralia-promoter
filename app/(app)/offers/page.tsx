@@ -58,7 +58,14 @@ export default function OffersPage() {
                 <div className="text-[15px] font-bold text-ink">{o.campaign_name}</div>
                 <div className="text-[12.5px] text-muted">{titleCase(o.role)} · expires in {countdown(o.expires_at)}</div>
               </div>
-              <StatusPill status="New" tone="ok" />
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <StatusPill status="New" tone="ok" />
+                {o.fit_pct != null && (
+                  <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-bold text-brand" title="How well this campaign matches your profile">
+                    {o.fit_pct}% fit
+                  </span>
+                )}
+              </div>
             </div>
             <div className="mt-3 rounded-xl bg-wash px-3 py-2.5">
               <div className="text-[12px] text-muted">You earn</div>
