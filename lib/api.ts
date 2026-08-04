@@ -105,6 +105,18 @@ export type Offer = {
   fit_pct: number | null;
 };
 
+export type Notification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  read: boolean;
+  created_at: string;
+};
+
+export type NotificationList = { items: Notification[]; unread: number };
+
 export type Assignment = {
   id: string;
   campaign_id: string;

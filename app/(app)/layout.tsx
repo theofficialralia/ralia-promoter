@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 import { Spinner } from '@/components/ui/Spinner';
 import { useTheme } from '@/lib/theme';
 import { useRequireAuth } from '@/lib/auth';
@@ -27,9 +28,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-wash">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-rule bg-paper/90 px-4 py-3 backdrop-blur">
         <Logo label="Promoter" />
-        <button onClick={toggle} className="flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-[15px]" aria-label="Toggle theme">
-          {theme === 'dark' ? '☀️' : '🌙'}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button onClick={toggle} className="flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-[15px]" aria-label="Toggle theme">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-4 py-5 pb-24 animate-fade-in">{children}</main>
