@@ -20,6 +20,34 @@ const PLATFORMS: { value: Platform; label: string }[] = [
   { value: 'OFFLINE', label: 'Offline' },
 ];
 
+// §3 roles, in plain language.
+const ROLES = [
+  { value: 'DISTRIBUTOR', label: 'Distributor', blurb: 'Share posts to your audience' },
+  { value: 'CREATOR', label: 'Creator', blurb: 'Make photos / videos for brands' },
+  { value: 'PARTICIPATOR', label: 'Participator', blurb: 'Sign-ups, reviews, small tasks' },
+];
+
+// Single-select answer → normalised factor value.
+const FREQ = [
+  { label: 'Daily', value: 1 }, { label: 'Few times/week', value: 0.7 }, { label: 'Weekly', value: 0.4 }, { label: 'Rarely', value: 0.2 },
+];
+const EQUIP = [
+  { label: 'Pro camera', value: 1 }, { label: 'Good phone', value: 0.7 }, { label: 'Basic phone', value: 0.4 },
+];
+const COMFORT = [
+  { label: 'Yes', value: 1 }, { label: 'Somewhat', value: 0.6 }, { label: 'No', value: 0.2 },
+];
+const TURNAROUND = [
+  { label: 'Under 24h', value: 1 }, { label: '1–2 days', value: 0.7 }, { label: '3+ days', value: 0.4 },
+];
+const YESNO = [{ label: 'Yes', value: 1 }, { label: 'No', value: 0.2 }];
+const ACCOUNT_AGE = [
+  { label: '2+ years', value: 1 }, { label: '1–2 years', value: 0.7 }, { label: 'Under a year', value: 0.4 }, { label: 'New', value: 0.2 },
+];
+const CONTENT_TYPES = ['Photos', 'Videos', 'Graphics', 'Writing'];
+const TASK_TYPES = ['Sign-ups', 'Reviews', 'Surveys', 'Downloads', 'Referrals'];
+const DEVICES = ['Phone', 'Second phone', 'Laptop', 'Tablet'];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const qc = useQueryClient();
@@ -32,12 +60,23 @@ export default function OnboardingPage() {
   const [cats, setCats] = useState<string[]>([]);
   const [langs, setLangs] = useState<string[]>([]);
   const [maxWeek, setMaxWeek] = useState(3);
-  // Step 2 — channel
+  // Step 2 — strengths (roles + capability)
+  const [roles, setRoles] = useState<string[]>([]);
+  const [postingFrequency, setPostingFrequency] = useState<number | null>(null);
+  const [equipment, setEquipment] = useState<number | null>(null);
+  const [cameraComfort, setCameraComfort] = useState<number | null>(null);
+  const [turnaround, setTurnaround] = useState<number | null>(null);
+  const [contentTypes, setContentTypes] = useState<string[]>([]);
+  const [taskTypes, setTaskTypes] = useState<string[]>([]);
+  const [devices, setDevices] = useState<string[]>([]);
+  const [multiStep, setMultiStep] = useState<number | null>(null);
+  const [accountAge, setAccountAge] = useState<number | null>(null);
+  // Step 3 — channel
   const [platform, setPlatform] = useState<Platform>('WHATSAPP_STATUS');
   const [claimed, setClaimed] = useState('');
   const [isGroup, setIsGroup] = useState(false);
   const [active, setActive] = useState('');
-  // Step 3 — bank
+  // Step 4 — bank
   const [bankCode, setBankCode] = useState('');
   const [acctNo, setAcctNo] = useState('');
 
@@ -50,12 +89,37 @@ export default function OnboardingPage() {
       setStep(2);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not save.'); } finally { setBusy(false); }
   }
+
+  async function saveStrengths() {
+    // Only send factors for the roles the promoter picked; missing single-selects
+    // default to a neutral 0.5 so an unanswered question neither helps nor hurts.
+    const f: Record<string, number> = {};
+    if (roles.includes('DISTRIBUTOR')) f.postingFrequency = postingFrequency ?? 0.5;
+    if (roles.includes('CREATOR')) {
+      f.equipment = equipment ?? 0.5;
+      f.cameraComfort = cameraComfort ?? 0.5;
+      f.turnaround = turnaround ?? 0.5;
+      f.contentBreadth = contentTypes.length / CONTENT_TYPES.length;
+    }
+    if (roles.includes('PARTICIPATOR')) {
+      f.taskBreadth = taskTypes.length / TASK_TYPES.length;
+      f.deviceCoverage = devices.length / DEVICES.length;
+      f.multiStepWillingness = multiStep ?? 0.5;
+      f.agedAccounts = accountAge ?? 0.5;
+    }
+    setBusy(true); setError(null);
+    try {
+      await api.put('/v1/promoters/me/profile', { roles, capability_inputs: f });
+      setStep(3);
+    } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not save.'); } finally { setBusy(false); }
+  }
+
   async function saveChannel() {
     setBusy(true); setError(null);
     try {
       await api.post('/v1/promoters/me/channels', { platform, claimed_audience: Number(claimed), is_group: isGroup, ...(isGroup ? { active_participants: Number(active) } : {}) });
       void qc.invalidateQueries({ queryKey: ['channels'] });
-      setStep(3);
+      setStep(4);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not add channel.'); } finally { setBusy(false); }
   }
   async function saveBank() {
@@ -63,14 +127,14 @@ export default function OnboardingPage() {
     try {
       await api.post('/v1/promoters/me/bank', { bank_code: bankCode, account_number: acctNo });
       void qc.invalidateQueries({ queryKey: ['profile'] });
-      setStep(4);
+      setStep(5);
     } catch (e) { setError(e instanceof ApiError ? e.message : 'Could not save bank.'); } finally { setBusy(false); }
   }
 
   return (
     <div>
       <div className="mb-4 flex items-center gap-1.5">
-        {[1, 2, 3].map((n) => <div key={n} className={`h-1.5 flex-1 rounded-full ${step >= n ? 'bg-brand' : 'bg-rule'}`} />)}
+        {[1, 2, 3, 4].map((n) => <div key={n} className={`h-1.5 flex-1 rounded-full ${step >= n ? 'bg-brand' : 'bg-rule'}`} />)}
       </div>
 
       {step === 1 && (
@@ -98,6 +162,49 @@ export default function OnboardingPage() {
 
       {step === 2 && (
         <div>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">How you’ll earn</h1>
+          <p className="mt-1 text-[13.5px] text-muted">Pick what fits you. Your answers set your capability score — the better the fit, the better the offers.</p>
+          <div className="mt-5 space-y-5">
+            <div className="space-y-2">
+              {ROLES.map((r) => {
+                const on = roles.includes(r.value);
+                return (
+                  <button key={r.value} type="button" onClick={() => toggle(r.value, roles, setRoles)}
+                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${on ? 'border-brand bg-brand/5' : 'border-rule'}`}>
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${on ? 'border-brand bg-brand text-white' : 'border-rule'}`}>{on ? '✓' : ''}</span>
+                    <span><span className="block text-[14px] font-bold text-ink">{r.label}</span><span className="block text-[12px] text-muted">{r.blurb}</span></span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {roles.includes('DISTRIBUTOR') && (
+              <Choice label="How often do you post?" options={FREQ} value={postingFrequency} onPick={setPostingFrequency} />
+            )}
+            {roles.includes('CREATOR') && (
+              <>
+                <Choice label="What do you create with?" options={EQUIP} value={equipment} onPick={setEquipment} />
+                <Choice label="Comfortable on camera?" options={COMFORT} value={cameraComfort} onPick={setCameraComfort} />
+                <Choice label="How fast can you deliver?" options={TURNAROUND} value={turnaround} onPick={setTurnaround} />
+                <div><div className="mb-2 text-[13px] font-semibold text-ink">What can you make?</div><Chips options={CONTENT_TYPES} selected={contentTypes} onToggle={(v) => toggle(v, contentTypes, setContentTypes)} /></div>
+              </>
+            )}
+            {roles.includes('PARTICIPATOR') && (
+              <>
+                <div><div className="mb-2 text-[13px] font-semibold text-ink">Tasks you’ll do</div><Chips options={TASK_TYPES} selected={taskTypes} onToggle={(v) => toggle(v, taskTypes, setTaskTypes)} /></div>
+                <div><div className="mb-2 text-[13px] font-semibold text-ink">Devices you can use</div><Chips options={DEVICES} selected={devices} onToggle={(v) => toggle(v, devices, setDevices)} /></div>
+                <Choice label="Willing to do multi-step tasks?" options={YESNO} value={multiStep} onPick={setMultiStep} />
+                <Choice label="How old are your social accounts?" options={ACCOUNT_AGE} value={accountAge} onPick={setAccountAge} />
+              </>
+            )}
+          </div>
+          {error && <p className="mt-3 text-[12px] text-brand-700">{error}</p>}
+          <Button size="lg" className="mt-5 w-full" loading={busy} disabled={roles.length === 0} onClick={saveStrengths}>Continue</Button>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Your best channel</h1>
           <p className="mt-1 text-[13.5px] text-muted">Where you’ll post. Ralia pays on effective reach — a conservative estimate of who actually sees your post.</p>
           <div className="mt-5 space-y-4">
@@ -120,7 +227,7 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <div>
           <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Where you get paid</h1>
           <p className="mt-1 text-[13.5px] text-muted">Your earnings are sent here after review.</p>
@@ -133,7 +240,7 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <div className="grid place-items-center py-10 text-center">
           <div className="grid h-16 w-16 place-items-center rounded-full bg-warn-wash text-[28px]">⏳</div>
           <h1 className="mt-4 text-[22px] font-extrabold text-ink">Profile submitted</h1>
@@ -154,6 +261,23 @@ function Chips({ options, selected, onToggle }: { options: string[]; selected: s
           <button key={o} type="button" onClick={() => onToggle(o)} className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${on ? 'bg-brand text-white' : 'border border-rule text-body'}`}>{o}</button>
         );
       })}
+    </div>
+  );
+}
+
+/** Single-select segmented control mapping a labelled answer to a normalised value. */
+function Choice({ label, options, value, onPick }: { label: string; options: { label: string; value: number }[]; value: number | null; onPick: (v: number) => void }) {
+  return (
+    <div>
+      <div className="mb-2 text-[13px] font-semibold text-ink">{label}</div>
+      <div className="flex flex-wrap gap-2">
+        {options.map((o) => {
+          const on = value === o.value;
+          return (
+            <button key={o.label} type="button" onClick={() => onPick(o.value)} className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition ${on ? 'bg-brand text-white' : 'border border-rule text-body'}`}>{o.label}</button>
+          );
+        })}
+      </div>
     </div>
   );
 }
