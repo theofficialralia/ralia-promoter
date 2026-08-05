@@ -33,10 +33,17 @@ export default function AssignmentDetailPage() {
       </div>
       <h1 className="mt-1 text-[22px] font-extrabold tracking-tight text-ink">{a.campaign_name}</h1>
 
-      <div className="mt-4 rounded-2xl bg-wash p-4">
-        <div className="text-[12px] text-muted">You earn</div>
-        <div className="text-[24px] font-extrabold text-ink">{a.fee.amount_display}</div>
-        <div className="text-[12px] text-muted">on ~{compactNumber(a.promised_reach)} effective views · paid after review</div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-wash p-4">
+          <div className="text-[12px] text-muted">You earn</div>
+          <div className="text-[24px] font-extrabold text-ink">{a.fee.amount_display}</div>
+          <div className="text-[11.5px] text-muted">on ~{compactNumber(a.promised_reach)} effective views</div>
+        </div>
+        <div className="rounded-2xl bg-wash p-4">
+          <div className="text-[12px] text-muted">Clicks driven</div>
+          <div className="text-[24px] font-extrabold text-ink">{compactNumber(a.clicks)}</div>
+          <div className="text-[11.5px] text-muted">from your tracking link</div>
+        </div>
       </div>
 
       <section className="card mt-4 p-4">
