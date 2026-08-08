@@ -128,6 +128,7 @@ export type Assignment = {
   status: string;
   due_at: string | null;
   instructions: string | null;
+  task: string;
   destination_url: string | null;
   clicks: number;
   latest_verdict: string | null;

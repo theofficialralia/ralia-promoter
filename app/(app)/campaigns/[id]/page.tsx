@@ -48,7 +48,13 @@ export default function AssignmentDetailPage() {
 
       <section className="card mt-4 p-4">
         <h2 className="text-[14px] font-extrabold text-ink">What to do</h2>
-        {a.instructions ? <p className="mt-2 text-[13.5px] text-body">{a.instructions}</p> : <p className="mt-2 text-[13.5px] text-muted">Post the campaign to your channel and keep it up for the required time.</p>}
+        <p className="mt-2 text-[13.5px] font-semibold text-body">{a.task}</p>
+        {a.instructions && (
+          <>
+            <div className="mt-3 text-[12px] font-semibold text-muted">Notes from the business</div>
+            <p className="text-[13.5px] text-body">{a.instructions}</p>
+          </>
+        )}
         {a.destination_url && (
           <>
             <div className="mt-3 text-[12px] font-semibold text-muted">Link to share</div>
