@@ -20,11 +20,11 @@ const PLATFORMS: { value: Platform; label: string }[] = [
   { value: 'OFFLINE', label: 'Offline' },
 ];
 
-// §3 roles, in plain language.
+// §3 roles, in the plain language the design uses ("How would you like to use Ralia").
 const ROLES = [
-  { value: 'DISTRIBUTOR', label: 'Distributor', blurb: 'Share posts to your audience' },
-  { value: 'CREATOR', label: 'Creator', blurb: 'Make photos / videos for brands' },
-  { value: 'PARTICIPATOR', label: 'Participator', blurb: 'Sign-ups, reviews, small tasks' },
+  { value: 'DISTRIBUTOR', label: 'Share ready-made posts', blurb: 'Earn by posting brand-provided content on your social media.' },
+  { value: 'CREATOR', label: 'Create content for brands', blurb: 'Create content with brand assets and talk about their product following the instructions they provide.' },
+  { value: 'PARTICIPATOR', label: 'Complete campaign tasks', blurb: 'Earn by performing simple actions like installs, sign-ups, reviews, or shares.' },
 ];
 
 // Single-select answer → normalised factor value.
@@ -47,6 +47,8 @@ const ACCOUNT_AGE = [
 const CONTENT_TYPES = ['Photos', 'Videos', 'Graphics', 'Writing'];
 const TASK_TYPES = ['Sign-ups', 'Reviews', 'Surveys', 'Downloads', 'Referrals'];
 const DEVICES = ['Phone', 'Second phone', 'Laptop', 'Tablet'];
+
+const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -81,6 +83,7 @@ export default function OnboardingPage() {
   const [acctNo, setAcctNo] = useState('');
 
   const toggle = (v: string, arr: string[], set: (a: string[]) => void) => set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  const firstName = fullName.trim().split(/\s+/)[0] || '';
 
   async function saveAbout() {
     setBusy(true); setError(null);
@@ -133,22 +136,34 @@ export default function OnboardingPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-1.5">
-        {[1, 2, 3, 4].map((n) => <div key={n} className={`h-1.5 flex-1 rounded-full ${step >= n ? 'bg-brand' : 'bg-rule'}`} />)}
-      </div>
+      {step <= TOTAL_STEPS && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-[13px] font-semibold">
+            {step > 1 ? (
+              <button onClick={() => setStep((n) => n - 1)} className="text-muted hover:text-ink">← Back</button>
+            ) : (
+              <span className="text-ink">Complete your profile</span>
+            )}
+            <span className="text-muted tabular-nums">{step}/{TOTAL_STEPS}</span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-rule">
+            <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} />
+          </div>
+        </div>
+      )}
 
       {step === 1 && (
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">A few questions</h1>
-          <p className="mt-1 text-[13.5px] text-muted">This helps us match you to the right campaigns.</p>
-          <div className="mt-5 space-y-4">
+          <h1 className="text-[24px] font-extrabold tracking-tight text-ink">Let&apos;s set up your profile.</h1>
+          <p className="mt-1 text-[13.5px] text-muted">A few questions so we can match you to the right campaigns.</p>
+          <div className="mt-6 space-y-4">
             <Field label="Your name"><input className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" /></Field>
             <div>
-              <div className="mb-2 text-[13px] font-semibold text-ink">Niches you’d promote</div>
+              <div className="mb-2 text-[13.5px] font-semibold text-ink">Niches you&apos;d promote</div>
               <Chips options={CATEGORIES} selected={cats} onToggle={(v) => toggle(v, cats, setCats)} />
             </div>
             <div>
-              <div className="mb-2 text-[13px] font-semibold text-ink">Languages you speak</div>
+              <div className="mb-2 text-[13.5px] font-semibold text-ink">Languages you speak</div>
               <Chips options={LANGUAGES} selected={langs} onToggle={(v) => toggle(v, langs, setLangs)} />
             </div>
             <Field label={`Max campaigns per week: ${maxWeek}`}>
@@ -156,23 +171,27 @@ export default function OnboardingPage() {
             </Field>
           </div>
           {error && <p className="mt-3 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-5 w-full" loading={busy} disabled={!fullName} onClick={saveAbout}>Continue</Button>
+          <Button size="lg" className="mt-6 w-full" loading={busy} disabled={!fullName || cats.length === 0 || langs.length === 0} onClick={saveAbout}>Continue →</Button>
         </div>
       )}
 
       {step === 2 && (
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">How you’ll earn</h1>
-          <p className="mt-1 text-[13.5px] text-muted">Pick what fits you. Your answers set your capability score — the better the fit, the better the offers.</p>
-          <div className="mt-5 space-y-5">
-            <div className="space-y-2">
+          {firstName && <p className="text-[14px] font-semibold text-ink">Hello <span className="text-brand">{firstName}</span>!</p>}
+          <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">How would you like to use Ralia</h1>
+          <p className="mt-1 text-[13.5px] text-muted">Pick what fits you — you can choose more than one. Your answers set your capability score.</p>
+          <div className="mt-6 space-y-5">
+            <div className="space-y-3">
               {ROLES.map((r) => {
                 const on = roles.includes(r.value);
                 return (
                   <button key={r.value} type="button" onClick={() => toggle(r.value, roles, setRoles)}
-                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${on ? 'border-brand bg-brand/5' : 'border-rule'}`}>
-                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${on ? 'border-brand bg-brand text-white' : 'border-rule'}`}>{on ? '✓' : ''}</span>
-                    <span><span className="block text-[14px] font-bold text-ink">{r.label}</span><span className="block text-[12px] text-muted">{r.blurb}</span></span>
+                    className={`flex w-full items-start justify-between gap-3 rounded-2xl border p-4 text-left transition ${on ? 'border-brand bg-brand/[0.04]' : 'border-rule hover:border-ink/30'}`}>
+                    <span>
+                      <span className="block text-[15px] font-bold text-ink">{r.label}</span>
+                      <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{r.blurb}</span>
+                    </span>
+                    <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? 'border-brand bg-brand text-[12px] text-white' : 'border-rule'}`}>{on ? '✓' : ''}</span>
                   </button>
                 );
               })}
@@ -186,33 +205,43 @@ export default function OnboardingPage() {
                 <Choice label="What do you create with?" options={EQUIP} value={equipment} onPick={setEquipment} />
                 <Choice label="Comfortable on camera?" options={COMFORT} value={cameraComfort} onPick={setCameraComfort} />
                 <Choice label="How fast can you deliver?" options={TURNAROUND} value={turnaround} onPick={setTurnaround} />
-                <div><div className="mb-2 text-[13px] font-semibold text-ink">What can you make?</div><Chips options={CONTENT_TYPES} selected={contentTypes} onToggle={(v) => toggle(v, contentTypes, setContentTypes)} /></div>
+                <div><div className="mb-2 text-[13.5px] font-semibold text-ink">What can you make?</div><Chips options={CONTENT_TYPES} selected={contentTypes} onToggle={(v) => toggle(v, contentTypes, setContentTypes)} /></div>
               </>
             )}
             {roles.includes('PARTICIPATOR') && (
               <>
-                <div><div className="mb-2 text-[13px] font-semibold text-ink">Tasks you’ll do</div><Chips options={TASK_TYPES} selected={taskTypes} onToggle={(v) => toggle(v, taskTypes, setTaskTypes)} /></div>
-                <div><div className="mb-2 text-[13px] font-semibold text-ink">Devices you can use</div><Chips options={DEVICES} selected={devices} onToggle={(v) => toggle(v, devices, setDevices)} /></div>
+                <div><div className="mb-2 text-[13.5px] font-semibold text-ink">Tasks you&apos;ll do</div><Chips options={TASK_TYPES} selected={taskTypes} onToggle={(v) => toggle(v, taskTypes, setTaskTypes)} /></div>
+                <div><div className="mb-2 text-[13.5px] font-semibold text-ink">Devices you can use</div><Chips options={DEVICES} selected={devices} onToggle={(v) => toggle(v, devices, setDevices)} /></div>
                 <Choice label="Willing to do multi-step tasks?" options={YESNO} value={multiStep} onPick={setMultiStep} />
                 <Choice label="How old are your social accounts?" options={ACCOUNT_AGE} value={accountAge} onPick={setAccountAge} />
               </>
             )}
           </div>
           {error && <p className="mt-3 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-5 w-full" loading={busy} disabled={roles.length === 0} onClick={saveStrengths}>Continue</Button>
+          <Button size="lg" className="mt-6 w-full" loading={busy} disabled={roles.length === 0} onClick={saveStrengths}>Continue →</Button>
         </div>
       )}
 
       {step === 3 && (
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Your best channel</h1>
-          <p className="mt-1 text-[13.5px] text-muted">Where you’ll post. Ralia pays on effective reach — a conservative estimate of who actually sees your post.</p>
-          <div className="mt-5 space-y-4">
-            <Field label="Platform">
-              <select className="input" value={platform} onChange={(e) => setPlatform(e.target.value as Platform)}>
-                {PLATFORMS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-            </Field>
+          {firstName && <p className="text-[14px] font-semibold text-ink">Hello <span className="text-brand">{firstName}</span>!</p>}
+          <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">Your best channel</h1>
+          <p className="mt-1 text-[13.5px] text-muted">Where you&apos;ll post. Ralia pays on effective reach — a conservative estimate of who actually sees your post.</p>
+          <div className="mt-6 space-y-4">
+            <div>
+              <div className="mb-2 text-[13.5px] font-semibold text-ink">Platform</div>
+              <div className="flex flex-wrap gap-2.5">
+                {PLATFORMS.map((p) => {
+                  const on = platform === p.value;
+                  return (
+                    <button key={p.value} type="button" onClick={() => setPlatform(p.value)}
+                      className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition ${on ? 'bg-ink text-white' : 'border border-rule bg-paper text-ink hover:border-ink/30'}`}>
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <Field label={isGroup ? 'Total members' : 'Followers / contacts'}>
               <input type="number" inputMode="numeric" className="input" value={claimed} onChange={(e) => setClaimed(e.target.value)} placeholder="e.g. 1200" />
             </Field>
@@ -223,20 +252,21 @@ export default function OnboardingPage() {
             {isGroup && <Field label="Roughly how many are active?"><input type="number" inputMode="numeric" className="input" value={active} onChange={(e) => setActive(e.target.value)} placeholder="e.g. 400" /></Field>}
           </div>
           {error && <p className="mt-3 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-5 w-full" loading={busy} disabled={!claimed} onClick={saveChannel}>Continue</Button>
+          <Button size="lg" className="mt-6 w-full" loading={busy} disabled={!claimed} onClick={saveChannel}>Continue →</Button>
         </div>
       )}
 
       {step === 4 && (
         <div>
-          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Where you get paid</h1>
+          {firstName && <p className="text-[14px] font-semibold text-ink">Hello <span className="text-brand">{firstName}</span>!</p>}
+          <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">Where you get paid</h1>
           <p className="mt-1 text-[13.5px] text-muted">Your earnings are sent here after review.</p>
-          <div className="mt-5 space-y-4">
+          <div className="mt-6 space-y-4">
             <Field label="Bank code" hint="3–6 digits (e.g. 058 for GTBank)."><input className="input" inputMode="numeric" value={bankCode} onChange={(e) => setBankCode(e.target.value)} placeholder="058" /></Field>
             <Field label="Account number" hint="10-digit NUBAN."><input className="input" inputMode="numeric" maxLength={10} value={acctNo} onChange={(e) => setAcctNo(e.target.value.replace(/\D/g, ''))} placeholder="0123456789" /></Field>
           </div>
           {error && <p className="mt-3 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-5 w-full" loading={busy} disabled={acctNo.length !== 10} onClick={saveBank}>Finish</Button>
+          <Button size="lg" className="mt-6 w-full" loading={busy} disabled={acctNo.length !== 10} onClick={saveBank}>Finish →</Button>
         </div>
       )}
 
@@ -269,7 +299,7 @@ function Chips({ options, selected, onToggle }: { options: string[]; selected: s
 function Choice({ label, options, value, onPick }: { label: string; options: { label: string; value: number }[]; value: number | null; onPick: (v: number) => void }) {
   return (
     <div>
-      <div className="mb-2 text-[13px] font-semibold text-ink">{label}</div>
+      <div className="mb-2 text-[13.5px] font-semibold text-ink">{label}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => {
           const on = value === o.value;
