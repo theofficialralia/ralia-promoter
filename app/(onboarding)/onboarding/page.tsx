@@ -55,6 +55,14 @@ const ROLE_QUESTIONS: Record<string, Question[]> = {
   ],
 };
 
+// The self-reported factors the backend accepts (scoring.ts). Questions can carry
+// extra factors for UX (e.g. audienceSize) that are captured but not persisted —
+// audience size is already covered by the channel's verified reach.
+const KNOWN_FACTORS = new Set([
+  'postingFrequency', 'contentBreadth', 'equipment', 'cameraComfort', 'turnaround',
+  'taskBreadth', 'deviceCoverage', 'multiStepWillingness', 'agedAccounts',
+]);
+
 type Community = { platform: Platform; participants: string; link: string };
 const DOTS = { backgroundImage: 'radial-gradient(circle, rgba(120,120,130,0.18) 1.2px, transparent 1.2px)', backgroundSize: '24px 24px' } as const;
 
@@ -145,6 +153,7 @@ export default function OnboardingPage() {
   async function finalize(list: Question[]) {
     const f: Record<string, number> = {};
     for (const q of list) {
+      if (!KNOWN_FACTORS.has(q.factor)) continue; // captured for UX, not a scored factor
       const a = answers[q.id];
       if (q.multi) f[q.factor] = a && a.length ? a.length / q.options.length : 0;
       else f[q.factor] = a && a.length ? q.options.find((o) => o.key === a[0])!.value : 0.5;
