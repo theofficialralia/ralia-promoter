@@ -25,20 +25,42 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-wash">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-rule bg-paper/90 px-4 py-3 backdrop-blur">
-        <Logo label="Promoter" />
-        <div className="flex items-center gap-2">
-          <NotificationBell />
-          <button onClick={toggle} className="flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-[15px]" aria-label="Toggle theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-wash lg:flex">
+      {/* Desktop sidebar — replaces the bottom tab bar on wide screens */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-rule bg-paper lg:flex">
+        <div className="px-5 py-6"><Logo label="Promoter" /></div>
+        <nav className="flex-1 space-y-1 px-3">
+          {TABS.map((t) => {
+            const active = pathname.startsWith(t.href);
+            return (
+              <Link key={t.href} href={t.href}
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-[14.5px] font-semibold transition ${active ? 'bg-brand/10 text-brand' : 'text-muted hover:bg-wash hover:text-ink'}`}>
+                <span className="text-[18px]">{t.icon}</span> {t.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
 
-      <main className="flex-1 px-4 py-5 pb-24 animate-fade-in">{children}</main>
+      <div className="flex min-h-screen flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-rule bg-paper/90 px-4 py-3 backdrop-blur lg:px-8">
+          <div className="lg:hidden"><Logo label="Promoter" /></div>
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <button onClick={toggle} className="flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-[15px]" aria-label="Toggle theme">
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+          </div>
+        </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-10 mx-auto flex max-w-md items-center justify-around border-t border-rule bg-paper/95 px-2 py-2 backdrop-blur">
+        <main className="flex-1 px-4 py-5 pb-24 animate-fade-in lg:px-8 lg:pb-10">
+          <div className="mx-auto w-full max-w-3xl">{children}</div>
+        </main>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-around border-t border-rule bg-paper/95 px-2 py-2 backdrop-blur lg:hidden">
         {TABS.map((t) => {
           const active = pathname.startsWith(t.href);
           return (
