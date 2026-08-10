@@ -67,6 +67,7 @@ export default function OnboardingPage() {
   const [channelPlatform, setChannelPlatform] = useState<Platform>('WHATSAPP_STATUS');
   const [channelUrl, setChannelUrl] = useState('');
   const [followers, setFollowers] = useState('');
+  const [analyticsFile, setAnalyticsFile] = useState<File | null>(null);
   const [maxWeek, setMaxWeek] = useState(3);
   const [communities, setCommunities] = useState<Community[]>([{ platform: 'TELEGRAM', participants: '', link: '' }]);
   // Step 2 — bank
@@ -97,13 +98,22 @@ export default function OnboardingPage() {
     try {
       await api.put('/v1/promoters/me/profile', { preferred_categories: cats, languages_spoken: langs, max_campaigns_per_week: maxWeek });
       // The channel with the highest following.
-      await api.post('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
-      // Each managed community is a group channel.
+      const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
+      // Optional analytics screenshot → queued for admin verification.
+      if (analyticsFile) {
+        const form = new FormData();
+        form.append('file', analyticsFile);
+        await api.postForm(`/v1/promoters/me/channels/${channel.id}/evidence`, form);
+      }
+      // Each managed community is a group channel. group_members is required for
+      // groups, and active_participants must not exceed it.
       for (const c of communities) {
         if (!c.participants) continue;
+        const members = Number(c.participants);
         await api.post('/v1/promoters/me/channels', {
           platform: c.platform, is_group: true, is_group_admin: true,
-          active_participants: Number(c.participants), claimed_audience: Number(c.participants), url: c.link || undefined,
+          group_members: members, active_participants: members,
+          claimed_audience: members, url: c.link || undefined,
         });
       }
       void qc.invalidateQueries({ queryKey: ['channels'] });
@@ -190,10 +200,17 @@ export default function OnboardingPage() {
                 <input className="input" value={channelUrl} onChange={(e) => setChannelUrl(e.target.value)} placeholder="Link to profile e.g https://…" />
                 <input className="input" type="number" inputMode="numeric" value={followers} onChange={(e) => setFollowers(e.target.value)} placeholder="Number of followers" />
               </div>
-              <div className="mt-3 grid place-items-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center opacity-60" title="Analytics upload is coming soon">
-                <span className="text-[13px] font-semibold text-ink">↑ Upload your analytics</span>
-                <span className="text-[12px] text-muted">JPG, PNG up to 5MB (coming soon)</span>
-              </div>
+              <label className="mt-3 grid cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center transition hover:border-brand/40">
+                <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => setAnalyticsFile(e.target.files?.[0] ?? null)} />
+                {analyticsFile ? (
+                  <span className="text-[13px] font-semibold text-ink">{analyticsFile.name}</span>
+                ) : (
+                  <>
+                    <span className="text-[13px] font-semibold text-ink">↑ Upload your analytics</span>
+                    <span className="text-[12px] text-muted">JPG, PNG or WebP up to 5MB — helps verify your reach</span>
+                  </>
+                )}
+              </label>
             </div>
 
             <Field label={`Max campaigns per week: ${maxWeek}`}>
