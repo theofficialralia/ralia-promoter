@@ -29,3 +29,11 @@ export function initials(name: string | null | undefined): string {
   const p = name.trim().split(/\s+/);
   return ((p[0]?.[0] ?? '') + (p[1]?.[0] ?? '')).toUpperCase() || '?';
 }
+
+/** A friendly display name derived from an email local-part when no name is set. */
+export function nameFromEmail(email: string | null | undefined): string {
+  if (!email) return 'Promoter';
+  const local = email.split('@')[0] ?? '';
+  const cleaned = local.replace(/[._-]+/g, ' ').replace(/\d+/g, '').trim();
+  return cleaned ? titleCase(cleaned) : 'Promoter';
+}

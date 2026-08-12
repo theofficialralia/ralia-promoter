@@ -7,6 +7,7 @@ import { Field } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { StatusPill } from '@/components/ui/StatusPill';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { api, ApiError, type Wallet, type Withdrawal } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
 
@@ -19,33 +20,55 @@ export default function EarningsPage() {
 
   if (wallet.isLoading) return <div className="grid h-64 place-items-center text-brand"><Spinner className="h-7 w-7" /></div>;
   const w = wallet.data!;
+  const txns = history.data ?? [];
 
   return (
     <div>
-      <h1 className="text-[24px] font-extrabold tracking-tight text-ink">Earnings</h1>
-      <p className="mt-1 text-[14px] text-muted">Every naira Ralia has paid you.</p>
+      <PageHeader crumb="Wallet" title="Earnings" subtitle="Every naira Ralia has paid you, and every withdrawal you’ve made." />
 
-      <div className="mt-5 rounded-2xl bg-sidebar p-5 text-white">
-        <div className="text-[13px] text-white/60">Available balance</div>
-        <div className="text-[32px] font-extrabold">{w.available.amount_display}</div>
-        <div className="mt-1 text-[12.5px] text-white/60">Pending review: {w.pending_withdrawal.amount_display}</div>
-        <Button className="mt-4 w-full" disabled={!w.can_withdraw} onClick={() => setWithdrawing(true)}>
-          {w.can_withdraw ? 'Request withdrawal' : `Minimum is ${w.withdrawal_minimum.amount_display}`}
-        </Button>
+      {/* Balance hero */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#2a0d0d] to-[#120708] p-6 text-white">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-[13px] text-white/60">Available balance</div>
+            <div className="text-[36px] font-extrabold leading-none">{w.available.amount_display}</div>
+          </div>
+          <Button
+            variant="secondary"
+            className="!border-white/20 !bg-white/10 !text-white hover:!bg-white/20"
+            disabled={!w.can_withdraw}
+            onClick={() => setWithdrawing(true)}
+          >
+            {w.can_withdraw ? 'Request Withdraw' : `Minimum is ${w.withdrawal_minimum.amount_display}`}
+          </Button>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:max-w-md">
+          <div className="rounded-2xl bg-white/10 p-3.5">
+            <div className="text-[11.5px] text-white/60">Pending review</div>
+            <div className="text-[18px] font-bold">{w.pending_withdrawal.amount_display}</div>
+          </div>
+          <div className="rounded-2xl bg-white/10 p-3.5">
+            <div className="text-[11.5px] text-white/60">Minimum withdrawal</div>
+            <div className="text-[18px] font-bold">{w.withdrawal_minimum.amount_display}</div>
+          </div>
+        </div>
       </div>
 
-      <h2 className="mt-6 text-[15px] font-extrabold text-ink">Transactions</h2>
-      <div className="mt-3 space-y-2">
-        {(history.data ?? []).length === 0 && <div className="card p-6 text-center text-[13.5px] text-muted">No withdrawals yet.</div>}
-        {(history.data ?? []).map((t) => (
-          <div key={t.id} className="card flex items-center justify-between gap-3 p-3.5">
-            <div>
-              <div className="text-[14px] font-bold text-ink">Withdrawal</div>
-              <div className="text-[12px] text-muted">{relativeTime(t.created_at)}</div>
+      <h2 className="mt-6 text-[16px] font-extrabold text-ink">Transactions</h2>
+      <div className="mt-3 space-y-2.5">
+        {txns.length === 0 && <div className="card p-8 text-center text-[13.5px] text-muted">No withdrawals yet.</div>}
+        {txns.map((t) => (
+          <div key={t.id} className="card flex items-center justify-between gap-3 p-4">
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-wash text-[16px] text-muted">↓</span>
+              <div>
+                <div className="text-[14px] font-bold text-ink">Withdrawal{t.paid_ref ? ` · ${t.paid_ref}` : ''}</div>
+                <div className="text-[12px] text-muted">{relativeTime(t.created_at)}</div>
+              </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-[15px] font-extrabold text-ink">-{t.amount.amount_display}</span>
               <StatusPill status={t.status} />
+              <span className="text-[15px] font-extrabold text-brand-700">−{t.amount.amount_display}</span>
             </div>
           </div>
         ))}
