@@ -168,6 +168,15 @@ export function IconOffers({ className }: IconProps) {
   );
 }
 
+export function IconBell({ className }: IconProps) {
+  return (
+    <svg {...box(className)}>
+      <path d="M6 9.5a6 6 0 0 1 12 0c0 3.2.7 5 1.5 6.1.4.6 0 1.4-.7 1.4H5.2c-.7 0-1.1-.8-.7-1.4C5.3 14.5 6 12.7 6 9.5Z" />
+      <path d="M10 20a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
 export function IconSupport({ className }: IconProps) {
   return (
     <svg {...box(className)}>

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { api, type NotificationList } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
+import { IconBell } from '@/components/brand/icons';
 import { Spinner } from '@/components/ui/Spinner';
 
 /** Bell + unread badge + dropdown feed. Polls the notifications API on an interval. */
@@ -44,10 +45,10 @@ export function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-[15px]"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-rule bg-paper text-body transition hover:text-ink"
         aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`}
       >
-        🔔
+        <IconBell className="h-[18px] w-[18px]" />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex min-w-[18px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-[18px] text-white">
             {unread > 9 ? '9+' : unread}
