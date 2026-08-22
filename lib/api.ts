@@ -135,5 +135,36 @@ export type Assignment = {
   reject_reason: string | null;
 };
 
+export type AssignmentDetail = {
+  id: string;
+  campaign_id: string;
+  campaign_name: string;
+  objective: string;
+  role: string;
+  status: string;
+  fee: Money;
+  fee_min: Money;
+  promised_reach: number;
+  due_at: string | null;
+  clicks: number;
+  instructions: string | null;
+  task: string;
+  destination_url: string | null;
+  /** The link the promoter shares — routes through /r/:token so clicks are recorded. */
+  tracking_url: string | null;
+  channel: { platform: Platform | string; handle: string | null; effective_reach: number } | null;
+  poster: { url: string; mime_type: string; size_bytes: number } | null;
+  caption: string | null;
+  latest_verdict: string | null;
+  reject_reason: string | null;
+  submission: {
+    image_url: string | null;
+    claimed_views: number | null;
+    verified_reach: number | null;
+    verdict: string;
+    platform: string | null;
+  } | null;
+};
+
 export type Wallet = { available: Money; pending_withdrawal: Money; withdrawal_minimum: Money; can_withdraw: boolean };
 export type Withdrawal = { id: string; amount: Money; status: string; paid_ref: string | null; created_at: string };
