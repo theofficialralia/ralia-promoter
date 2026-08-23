@@ -11,6 +11,7 @@ import { StatusPill } from '@/components/ui/StatusPill';
 import { IconChevronRight } from '@/components/brand/icons';
 import { api, type BankAccount, type Channel, type Profile } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { SUPPORT } from '@/lib/support';
 import { compactNumber, titleCase } from '@/lib/format';
 
 export default function ProfilePage() {
@@ -79,7 +80,7 @@ export default function ProfilePage() {
       {/* Preferences */}
       <Group title="Preferences">
         <Row href="/onboarding" label="Notification preferences" meta="Email & in-app" />
-        <RowExternal href="mailto:support@ralia.app" label="Help & support" meta="support@ralia.app" />
+        <RowExternal href={SUPPORT.whatsappUrl} label="Help & support" meta="WhatsApp" />
       </Group>
 
       {/* Other */}
@@ -97,11 +98,11 @@ export default function ProfilePage() {
       {confirmDelete && (
         <ConfirmModal
           title="Delete your account?"
-          body="This is permanent and can’t be undone. Account deletion isn’t available in-app yet — contact support@ralia.app and we’ll process it for you."
+          body={`This is permanent and can’t be undone. Account deletion isn’t available in-app yet — contact ${SUPPORT.email} and we’ll process it for you.`}
           confirmLabel="Email support"
           danger
           onClose={() => setConfirmDelete(false)}
-          onConfirm={() => { window.location.href = 'mailto:support@ralia.app?subject=Delete%20my%20account'; setConfirmDelete(false); }}
+          onConfirm={() => { window.location.href = `mailto:${SUPPORT.email}?subject=Delete%20my%20account`; setConfirmDelete(false); }}
         />
       )}
     </div>

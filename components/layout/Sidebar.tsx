@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { IconCampaigns, IconCollapse, IconFinance, IconLogout, IconOffers, IconSupport } from '@/components/brand/icons';
 import { useAuth } from '@/lib/auth';
 import { nameFromEmail } from '@/lib/format';
+import { SUPPORT } from '@/lib/support';
 
 const NAV = [
   { href: '/offers', label: 'Offers', Icon: IconOffers },
@@ -65,7 +66,9 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: { collapsed?: b
 
       <div className="mt-auto space-y-1">
         <a
-          href="mailto:support@ralia.app"
+          href={SUPPORT.whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
           title={collapsed ? 'Help & Support' : undefined}
           className={`flex items-center rounded-xl py-2.5 text-[14px] font-semibold text-white/65 transition hover:bg-white/10 hover:text-white ${collapsed ? 'justify-center' : 'gap-3 px-3'}`}
         >
