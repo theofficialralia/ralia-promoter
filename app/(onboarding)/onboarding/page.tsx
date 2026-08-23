@@ -7,8 +7,8 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError, type Platform } from '@/lib/api';
+import { CATEGORIES } from '@/lib/categories';
 
-const CATEGORIES = ['Fashion', 'Tech', 'Food', 'Finance', 'Health', 'Education', 'Entertainment', 'Sports', 'Beauty', 'Travel'];
 const LANGUAGES = ['English', 'Pidgin', 'Hausa', 'Yoruba', 'Igbo'];
 const HIGH_PLATFORMS: { value: Platform; label: string }[] = [
   { value: 'WHATSAPP_STATUS', label: 'WhatsApp' }, { value: 'INSTAGRAM', label: 'Instagram' },
