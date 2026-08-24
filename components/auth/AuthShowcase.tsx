@@ -12,20 +12,19 @@ type Slide = { image: string; quote: string; highlight?: string; author?: string
  */
 const SLIDES: Slide[] = [
   {
-    image: '/onboarding/slide-1.svg',
+    image: '/onboarding/slide-1.jpg',
+    quote: 'Ralia connects me with brands that actually fit my audience.',
+    highlight: 'No endless emails or negotiations — just quality partnerships that make sense.',
+  },
+  {
+    image: '/onboarding/slide-2.jpg',
     quote: 'I’ve worked with brands before, but Ralia made the process effortless.',
     highlight: 'Campaigns are clear, payments are fast, and I can focus on creating.',
-    author: '— Pedri G., 2.6M on Instagram',
   },
   {
-    image: '/onboarding/slide-2.svg',
-    quote: 'Ralia connects me with brands that actually fit my audience — no endless emails or negotiations.',
-    author: '— Adaeze N., lifestyle creator',
-  },
-  {
-    image: '/onboarding/slide-3.svg',
-    quote: 'Accept, post, submit proof, get paid. Straightforward — and it keeps my reliability score working for me.',
-    author: '— Bello S., campus distributor',
+    image: '/onboarding/slide-3.jpg',
+    quote: 'Accept, post, submit proof, get paid.',
+    highlight: 'Straightforward — and my reliability score keeps working for me.',
   },
 ];
 
