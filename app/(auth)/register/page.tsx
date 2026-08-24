@@ -57,7 +57,9 @@ export default function RegisterPage() {
         accepted_terms: true,
         accepted_privacy: true,
       }, { auth: false });
-      router.replace(`/verify?phone=${encodeURIComponent(f.phone)}`);
+      // Verification is by email OTP for now — carry both: email to show the promoter
+      // where the code went, phone as the account key the verify endpoint uses.
+      router.replace(`/verify?email=${encodeURIComponent(f.email)}&phone=${encodeURIComponent(f.phone)}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not create your account.');
       setBusy(false);

@@ -18,6 +18,8 @@ function isRejected(a: Assignment) { return a.latest_verdict === 'REJECTED' || a
 function isReview(a: Assignment) { return a.status === 'SUBMITTED'; }
 
 function noteFor(a: Assignment): string {
+  // §multi-day: for a repeating campaign, progress is the headline note.
+  if (a.posts_required > 1) return `${a.posts_approved}/${a.posts_required} posts approved`;
   if (isRejected(a)) return a.reject_reason ?? 'Rejected';
   if (isReview(a)) return 'Submitted · usually < 24h';
   if (isPaid(a)) return 'Paid to available balance';

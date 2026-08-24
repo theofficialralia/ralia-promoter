@@ -133,6 +133,28 @@ export type Assignment = {
   clicks: number;
   latest_verdict: string | null;
   reject_reason: string | null;
+  posts_required: number;
+  posts_approved: number;
+};
+
+export type DeliverySlotStatus = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'MISSED';
+
+export type DeliverySlot = {
+  id: string;
+  index: number;
+  scheduled_for: string;
+  due_at: string;
+  status: DeliverySlotStatus;
+  submittable: boolean;
+  overdue: boolean;
+  fee: Money;
+  submission: {
+    image_url: string | null;
+    claimed_views: number | null;
+    verified_reach: number | null;
+    verdict: string;
+    reject_reason: string | null;
+  } | null;
 };
 
 export type AssignmentDetail = {
@@ -145,7 +167,15 @@ export type AssignmentDetail = {
   fee: Money;
   fee_min: Money;
   promised_reach: number;
+  /** The promoter's internal deadline (a contingency buffer before the client's run-window end). */
   due_at: string | null;
+  /** Client-facing run window — context only; the promoter is held to due_at. */
+  campaign_starts_at: string | null;
+  campaign_ends_at: string | null;
+  /** §multi-day: scheduled-post progress. posts_required === 1 → a one-off. */
+  posts_required: number;
+  posts_approved: number;
+  slots: DeliverySlot[];
   clicks: number;
   instructions: string | null;
   task: string;

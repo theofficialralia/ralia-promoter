@@ -12,6 +12,7 @@ function VerifyInner() {
   const router = useRouter();
   const params = useSearchParams();
   const phone = params.get('phone') ?? '';
+  const email = params.get('email') ?? '';
   const { setTokens } = useAuth();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,8 +40,8 @@ function VerifyInner() {
   return (
     <div>
       <Logo label="Promoter" />
-      <h1 className="mt-8 text-[26px] font-extrabold tracking-tight text-ink">Verify your phone.</h1>
-      <p className="mt-1 text-[14px] text-muted">We sent a 6-digit code to {phone || 'your phone'}.</p>
+      <h1 className="mt-8 text-[26px] font-extrabold tracking-tight text-ink">Verify your email.</h1>
+      <p className="mt-1 text-[14px] text-muted">We sent a 6-digit code to {email || 'your email'}. Check your inbox (and spam).</p>
 
       <form onSubmit={submit} className="mt-7 space-y-4">
         <Field label="Code">
