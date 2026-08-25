@@ -63,7 +63,7 @@ const KNOWN_FACTORS = new Set([
   'taskBreadth', 'deviceCoverage', 'multiStepWillingness', 'agedAccounts',
 ]);
 
-type Community = { platform: Platform; participants: string; link: string };
+type Community = { platform: Platform; participants: string; link: string; screenshot?: File | null };
 const DOTS = { backgroundImage: 'radial-gradient(circle, rgba(120,120,130,0.18) 1.2px, transparent 1.2px)', backgroundSize: '24px 24px' } as const;
 
 export default function OnboardingPage() {
@@ -106,19 +106,30 @@ export default function OnboardingPage() {
   const globalPos = step <= 3 ? step : step === 4 ? 3 + qIndex + 1 : totalSteps;
 
   async function saveProfile() {
+    if (!/^https?:\/\//.test(channelUrl)) { setError('Add a link to your main channel (this is how we verify it).'); return; }
+    const halfCommunity = communities.some((c) => (!!c.participants && !c.link) || (!c.participants && !!c.link));
+    if (halfCommunity) { setError('Each community needs both its participant count and a link.'); return; }
     setBusy(true); setError(null);
     try {
       await api.put('/v1/promoters/me/profile', { preferred_categories: cats, languages_spoken: langs, max_campaigns_per_week: maxWeek });
-      const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
+      // Every channel carries a link (mandatory — the admin verifies insights against
+      // it) and an optional screenshot (the admin verifies reach against it).
+      const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl, claimed_audience: Number(followers) });
       if (analytics && channel?.id) {
         const form = new FormData();
         form.append('file', analytics);
         await api.postForm(`/v1/promoters/me/channels/${channel.id}/evidence`, form).catch(() => {});
       }
       for (const c of communities) {
-        if (!c.participants) continue;
+        // Skip empty rows; a filled row needs both participants and a link.
+        if (!c.participants || !c.link) continue;
         const members = Number(c.participants);
-        await api.post('/v1/promoters/me/channels', { platform: c.platform, is_group: true, is_group_admin: true, group_members: members, active_participants: members, claimed_audience: members, url: c.link || undefined });
+        const community = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: c.platform, is_group: true, is_group_admin: true, group_members: members, active_participants: members, claimed_audience: members, url: c.link });
+        if (c.screenshot && community?.id) {
+          const form = new FormData();
+          form.append('file', c.screenshot);
+          await api.postForm(`/v1/promoters/me/channels/${community.id}/evidence`, form).catch(() => {});
+        }
       }
       void qc.invalidateQueries({ queryKey: ['channels'] });
       setStep(2);
@@ -363,7 +374,7 @@ function StepProfile(p: any) {
             })}
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder="Link to profile e.g https://…" />
+            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder="Link to profile (required) e.g https://…" />
             <input className="input" type="number" inputMode="numeric" value={p.followers} onChange={(e) => p.setFollowers(e.target.value)} placeholder="Number of followers" />
           </div>
           <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center transition hover:border-brand/40">
@@ -379,12 +390,18 @@ function StepProfile(p: any) {
           <div className="mb-2 text-[13.5px] font-semibold text-ink">Online communities you manage <span className="font-normal text-muted">(optional)</span></div>
           <div className="space-y-3">
             {p.communities.map((c: Community, i: number) => (
-              <div key={i} className="grid gap-2 sm:grid-cols-3">
-                <select className="input appearance-none" value={c.platform} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, platform: e.target.value as Platform } : x))}>
-                  {COMMUNITY_PLATFORMS.map((pl) => <option key={pl.value} value={pl.value}>{pl.label}</option>)}
-                </select>
-                <input className="input" type="number" inputMode="numeric" value={c.participants} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, participants: e.target.value } : x))} placeholder="No. of participants" />
-                <input className="input" value={c.link} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, link: e.target.value } : x))} placeholder="Link (optional)" />
+              <div key={i} className="space-y-2 rounded-2xl border border-rule p-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <select className="input appearance-none" value={c.platform} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, platform: e.target.value as Platform } : x))}>
+                    {COMMUNITY_PLATFORMS.map((pl) => <option key={pl.value} value={pl.value}>{pl.label}</option>)}
+                  </select>
+                  <input className="input" type="number" inputMode="numeric" value={c.participants} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, participants: e.target.value } : x))} placeholder="No. of participants" />
+                  <input className="input" value={c.link} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, link: e.target.value } : x))} placeholder="Link (required)" />
+                </div>
+                <label className="flex cursor-pointer items-center gap-2 text-[12.5px]">
+                  <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, screenshot: f } : x)); }} />
+                  <span className="rounded-full border border-dashed border-rule px-3 py-1.5 font-semibold text-ink transition hover:border-brand/40">{c.screenshot ? c.screenshot.name : '↑ Screenshot (optional)'}</span>
+                </label>
               </div>
             ))}
           </div>
@@ -392,7 +409,7 @@ function StepProfile(p: any) {
         </div>
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || !/^https?:\/\//.test(p.channelUrl)} onClick={p.onNext}>Next →</Button>
     </div>
   );
 }
