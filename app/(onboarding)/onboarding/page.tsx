@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { api, ApiError, type Platform } from '@/lib/api';
@@ -398,23 +398,55 @@ function StepProfile(p: any) {
 }
 
 function StepBank(p: any) {
+  const banks = useQuery({ queryKey: ['banks'], queryFn: () => api.get<{ name: string; code: string }[]>('/v1/promoters/me/banks') });
+  const [resolving, setResolving] = useState(false);
+  const [resolveErr, setResolveErr] = useState<string | null>(null);
+  const [bypassed, setBypassed] = useState(false);
+
+  // Auto-resolve the account name once a bank + 10-digit number are entered.
+  useEffect(() => {
+    const code = p.bankCode;
+    const num = p.acctNo;
+    if (!code || num.length !== 10) { p.setAcctName(''); setResolveErr(null); setBypassed(false); return; }
+    let cancelled = false;
+    setResolving(true); setResolveErr(null);
+    api
+      .get<{ account_name: string; bypassed: boolean }>(`/v1/promoters/me/bank/resolve?bank_code=${encodeURIComponent(code)}&account_number=${encodeURIComponent(num)}`)
+      .then((r) => { if (cancelled) return; p.setAcctName(r.account_name); setBypassed(!!r.bypassed); })
+      .catch((e) => { if (cancelled) return; p.setAcctName(''); setResolveErr(e instanceof ApiError ? e.message : 'Could not verify that account.'); })
+      .finally(() => { if (!cancelled) setResolving(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.bankCode, p.acctNo]);
+
   return (
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">Where you get paid</h1>
       <p className="mt-1 text-[13.5px] text-muted">Your earnings are sent here after review.</p>
       <div className="mt-6 space-y-4">
-        <Field label="Bank code" hint="3–6 digits (e.g. 058 for GTBank)."><input className="input" inputMode="numeric" value={p.bankCode} onChange={(e) => p.setBankCode(e.target.value.replace(/\D/g, ''))} placeholder="058" /></Field>
+        <Field label="Bank">
+          <select className="input appearance-none pr-10" value={p.bankCode} onChange={(e) => p.setBankCode(e.target.value)}>
+            <option value="">{banks.isLoading ? 'Loading banks…' : 'Select your bank'}</option>
+            {(banks.data ?? []).map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+          </select>
+        </Field>
         <Field label="Account number" hint="10-digit NUBAN."><input className="input" inputMode="numeric" maxLength={10} value={p.acctNo} onChange={(e) => p.setAcctNo(e.target.value.replace(/\D/g, ''))} placeholder="0123456789" /></Field>
-        <Field label="Account name"><input className="input" value={p.acctName} onChange={(e) => p.setAcctName(e.target.value)} placeholder="As it appears on your bank account" /></Field>
-        {p.acctName.trim() && (
+        {resolving && <p className="text-[13px] text-muted">Checking account…</p>}
+        {p.acctName && !resolving && (
           <div className="flex items-start gap-2 rounded-xl border border-ok/30 bg-ok/5 px-4 py-3 text-[13px]">
-            <span className="text-ok">✓</span><span><span className="font-semibold text-ok">Account name confirmed.</span> <span className="text-muted">If this isn&apos;t you, change the account number.</span></span>
+            <span className="mt-0.5 text-ok">✓</span>
+            <span>
+              <span className="font-semibold text-ink">{p.acctName}</span>
+              {bypassed && <span className="ml-1.5 rounded bg-warn/15 px-1.5 py-0.5 text-[11px] font-semibold text-warn">dev</span>}
+              <br /><span className="text-muted">If this isn&apos;t you, check the account number and bank.</span>
+            </span>
           </div>
         )}
+        {resolveErr && !resolving && <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-[13px] text-brand-700">{resolveErr}</p>}
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!/^\d{3,6}$/.test(p.bankCode) || p.acctNo.length !== 10 || !p.acctName.trim()} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!p.bankCode || p.acctNo.length !== 10 || !p.acctName.trim() || resolving} onClick={p.onNext}>Next →</Button>
     </div>
   );
 }
