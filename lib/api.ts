@@ -105,6 +105,30 @@ export type Offer = {
   fit_pct: number | null;
 };
 
+/** The fuller picture a promoter reviews before accepting or declining. */
+export type OfferDetail = {
+  id: string;
+  campaign_id: string;
+  campaign_name: string;
+  objective: string;
+  role: string;
+  description: string | null;
+  instructions: string | null;
+  task: string;
+  fee: Money;
+  fee_min: Money;
+  promised_reach: number;
+  posts_required: number;
+  cadence: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  expires_at: string;
+  fit_pct: number | null;
+  channel: { platform: string; handle: string | null; effective_reach: number } | null;
+  poster: { url: string; mime_type: string; size_bytes: number } | null;
+  caption: string | null;
+};
+
 export type Notification = {
   id: string;
   type: string;

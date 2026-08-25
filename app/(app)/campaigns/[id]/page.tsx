@@ -83,7 +83,9 @@ export default function AssignmentDetailPage() {
         <div className="space-y-3">
           <Step n={1} title="Download the poster" sub={a.poster ? `${a.poster.mime_type.split('/')[1]?.toUpperCase() ?? 'Image'} · ${fmtSize(a.poster.size_bytes)}` : 'The business asked Ralia to design this — check back shortly.'}>
             {a.poster && (
-              <a href={a.poster.url} download target="_blank" rel="noreferrer">
+              // ?download=1 forces a real download (Content-Disposition / Cloudinary
+              // fl_attachment) instead of opening the image inline in a new tab.
+              <a href={`${a.poster.url}${a.poster.url.includes('?') ? '&' : '?'}download=1`} download>
                 <Button variant="secondary">↓ Download</Button>
               </a>
             )}
