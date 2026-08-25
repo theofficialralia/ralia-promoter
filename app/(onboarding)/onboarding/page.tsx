@@ -106,7 +106,8 @@ export default function OnboardingPage() {
   const globalPos = step <= 3 ? step : step === 4 ? 3 + qIndex + 1 : totalSteps;
 
   async function saveProfile() {
-    if (!/^https?:\/\//.test(channelUrl)) { setError('Add a link to your main channel (this is how we verify it).'); return; }
+    // WhatsApp status has no public link; every other platform needs one so it can be verified.
+    if (channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(channelUrl)) { setError('Add a link to your main channel (this is how we verify it).'); return; }
     const halfCommunity = communities.some((c) => (!!c.participants && !c.link) || (!c.participants && !!c.link));
     if (halfCommunity) { setError('Each community needs both its participant count and a link.'); return; }
     setBusy(true); setError(null);
@@ -114,7 +115,7 @@ export default function OnboardingPage() {
       await api.put('/v1/promoters/me/profile', { preferred_categories: cats, languages_spoken: langs, max_campaigns_per_week: maxWeek });
       // Every channel carries a link (mandatory — the admin verifies insights against
       // it) and an optional screenshot (the admin verifies reach against it).
-      const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl, claimed_audience: Number(followers) });
+      const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
       if (analytics && channel?.id) {
         const form = new FormData();
         form.append('file', analytics);
@@ -374,7 +375,7 @@ function StepProfile(p: any) {
             })}
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder="Link to profile (required) e.g https://…" />
+            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder={p.channelPlatform === 'WHATSAPP_STATUS' ? 'Link (optional for WhatsApp)' : 'Link to profile (required) e.g https://…'} />
             <input className="input" type="number" inputMode="numeric" value={p.followers} onChange={(e) => p.setFollowers(e.target.value)} placeholder="Number of followers" />
           </div>
           <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center transition hover:border-brand/40">
@@ -409,7 +410,7 @@ function StepProfile(p: any) {
         </div>
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || !/^https?:\/\//.test(p.channelUrl)} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || (p.channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(p.channelUrl))} onClick={p.onNext}>Next →</Button>
     </div>
   );
 }
