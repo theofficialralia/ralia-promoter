@@ -227,10 +227,12 @@ export default function OnboardingPage() {
         {step === 4 && currentQ && (
           <>
             <div className="mt-3 flex items-start gap-3">
-              <button onClick={qBack} className="mt-3 flex shrink-0 items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">← back</button>
-              <div className="flex flex-1 items-center justify-between gap-4 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur">
-                <p className="text-[15px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
-                <button onClick={() => void dropRole(currentQ.role)} className="shrink-0 rounded-full bg-brand px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition hover:opacity-90">
+              <button onClick={qBack} className="mt-1 flex shrink-0 items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">← back</button>
+              {/* Stack the copy and the opt-out button on narrow screens — side-by-side, the
+                  long button overflowed off the right edge and made the top unreachable. */}
+              <div className="flex flex-1 flex-col gap-3 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-[14.5px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
+                <button onClick={() => void dropRole(currentQ.role)} className="shrink-0 self-start rounded-full bg-brand px-4 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90 sm:self-auto">
                   Not interested in this role anymore ↪
                 </button>
               </div>
@@ -371,7 +373,7 @@ function StepProfile(p: any) {
           <div className="flex flex-wrap gap-2.5">
             {HIGH_PLATFORMS.map((pl) => {
               const on = p.channelPlatform === pl.value;
-              return <button key={pl.value} type="button" onClick={() => p.setChannelPlatform(pl.value)} className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition ${on ? 'bg-ink text-white' : 'border border-rule bg-paper text-ink hover:border-ink/30'}`}>{pl.label}</button>;
+              return <button key={pl.value} type="button" onClick={() => p.setChannelPlatform(pl.value)} className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition ${on ? 'bg-ink text-paper' : 'border border-rule bg-paper text-ink hover:border-ink/30'}`}>{pl.label}</button>;
             })}
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -392,6 +394,16 @@ function StepProfile(p: any) {
           <div className="space-y-3">
             {p.communities.map((c: Community, i: number) => (
               <div key={i} className="space-y-2 rounded-2xl border border-rule p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-semibold text-muted">Community {i + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => p.setCommunities((arr: Community[]) => arr.filter((_, j) => j !== i))}
+                    className="text-[12px] font-semibold text-brand-700 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
                 <div className="grid gap-2 sm:grid-cols-3">
                   <select className="input appearance-none" value={c.platform} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, platform: e.target.value as Platform } : x))}>
                     {COMMUNITY_PLATFORMS.map((pl) => <option key={pl.value} value={pl.value}>{pl.label}</option>)}
