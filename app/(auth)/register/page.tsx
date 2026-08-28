@@ -7,6 +7,7 @@ import { LogoMark } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { api, ApiError } from '@/lib/api';
 
 const GENDERS = [
@@ -122,15 +123,11 @@ export default function RegisterPage() {
 
         <Button type="submit" size="lg" loading={busy} className="w-full">Create account &amp; verify</Button>
 
-        <button
-          type="button"
-          disabled
-          title="Google sign-in is coming soon"
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-rule bg-paper py-3 text-[14px] font-semibold text-muted opacity-60"
-        >
-          <GoogleGlyph /> Sign in with Google
-          <span className="text-[11px] font-normal">(soon)</span>
-        </button>
+        <div className="flex items-center gap-3 text-[12px] text-muted">
+          <span className="h-px flex-1 bg-rule" /> or <span className="h-px flex-1 bg-rule" />
+        </div>
+
+        <GoogleSignInButton role="PROMOTER" />
       </form>
 
       <p className="mt-6 text-center text-[14px] text-muted">
@@ -140,13 +137,3 @@ export default function RegisterPage() {
   );
 }
 
-function GoogleGlyph() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.2 13.3 17.6 9.5 24 9.5Z" />
-      <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 7l7.2 5.6c4.2-3.9 6.6-9.6 6.6-16.1Z" />
-      <path fill="#FBBC05" d="M10.4 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.8-6.1Z" />
-      <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.2-5.6c-2 1.4-4.6 2.2-8 2.2-6.4 0-11.8-3.8-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48Z" />
-    </svg>
-  );
-}

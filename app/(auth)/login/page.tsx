@@ -7,6 +7,7 @@ import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { api, ApiError, type Tokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -46,6 +47,11 @@ export default function LoginPage() {
         </Field>
         {error && <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-[13px] text-brand-700">{error}</p>}
         <Button type="submit" size="lg" loading={busy} className="w-full">Sign in</Button>
+
+        <div className="flex items-center gap-3 text-[12px] text-muted">
+          <span className="h-px flex-1 bg-rule" /> or <span className="h-px flex-1 bg-rule" />
+        </div>
+        <GoogleSignInButton role="PROMOTER" />
       </form>
 
       <p className="mt-6 text-center text-[14px] text-muted">New to Ralia? <Link href="/register" className="font-semibold text-brand-700">Create an account</Link></p>
