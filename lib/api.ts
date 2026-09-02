@@ -79,6 +79,8 @@ export type Profile = {
   languages_spoken: string[];
   preferred_categories: string[];
   max_campaigns_per_week: number;
+  /** What's still missing before the profile can be reviewed (e.g. ['channels','bank']). */
+  missing?: string[];
 };
 
 export type Channel = {

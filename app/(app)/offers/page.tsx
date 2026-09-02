@@ -13,6 +13,22 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { api, ApiError, type Offer, type OfferDetail, type Profile } from '@/lib/api';
 import { compactNumber, countdown, naira, titleCase } from '@/lib/format';
 
+/** Friendly labels for the profile-completion checklist. */
+function missingLabel(key: string): string {
+  const map: Record<string, string> = {
+    channels: 'Add a channel',
+    bank: 'Add bank details',
+    bank_account: 'Add bank details',
+    profile: 'Finish your profile',
+    questionnaire: 'Answer the questions',
+    questions: 'Answer the questions',
+    roles: 'Pick your roles',
+    languages: 'Add your languages',
+    categories: 'Pick your categories',
+  };
+  return map[key.toLowerCase()] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** A plain-language "what you'll do" line derived from the offer role. */
 function taskForRole(role: string): string {
   switch (role.toUpperCase()) {
@@ -66,12 +82,31 @@ export default function OffersPage() {
       <PageHeader crumb="Marketplace" title="Offers for you" subtitle="Fresh campaigns matched to your channels and languages. The fee shown is what you take home." />
 
       {status && status !== 'ACTIVE' && (
-        <Link href="/onboarding" className="mb-5 flex items-center gap-3 rounded-2xl border border-warn/40 bg-warn-wash px-4 py-3.5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warn/15 text-warn">⚠</span>
-          <span>
-            <span className="block text-[14px] font-bold text-warn">{status === 'AWAITING_APPROVAL' ? 'Profile under review' : 'Complete your profile to receive campaign offers'}</span>
-            <span className="block text-[12.5px] text-body">{status === 'AWAITING_APPROVAL' ? 'We’ll notify you once you’re approved — then offers appear here.' : 'Add your channels and bank details to start receiving offers.'}</span>
-          </span>
+        <Link href="/onboarding" className="mb-5 block rounded-2xl border border-warn/40 bg-warn-wash px-4 py-3.5">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warn/15 text-warn">⚠</span>
+            <span>
+              <span className="block text-[14px] font-bold text-warn">{status === 'AWAITING_APPROVAL' ? 'Profile under review' : 'Complete your profile to receive campaign offers'}</span>
+              <span className="block text-[12.5px] text-body">
+                {status === 'AWAITING_APPROVAL'
+                  ? 'We’ll notify you once you’re approved — then offers appear here.'
+                  : 'You can’t be matched to any campaign until your profile is complete.'}
+              </span>
+            </span>
+          </div>
+          {status !== 'AWAITING_APPROVAL' && p?.missing && p.missing.length > 0 && (
+            <div className="mt-3 border-t border-warn/20 pt-3">
+              <div className="mb-1.5 flex items-center justify-between text-[12px] font-semibold text-warn">
+                <span>Still to do</span>
+                <span>{p.missing.length} step{p.missing.length === 1 ? '' : 's'} left →</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {p.missing.map((m) => (
+                  <span key={m} className="rounded-full border border-warn/30 bg-paper px-2.5 py-1 text-[11.5px] font-semibold text-body">{missingLabel(m)}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </Link>
       )}
 
