@@ -34,7 +34,7 @@ export default function ProfilePage() {
   if (profile.isLoading) return <div className="grid h-64 place-items-center text-brand"><Spinner className="h-7 w-7" /></div>;
   const p = profile.data!;
 
-  async function signOut() { await logout(); router.replace('/login'); }
+  async function signOut() { if (!window.confirm('Log out of Ralia?')) return; await logout(); router.replace('/login'); }
 
   const channelCount = channels.data?.length ?? 0;
   const bankCount = bank.data?.length ?? 0;
