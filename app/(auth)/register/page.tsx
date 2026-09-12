@@ -58,7 +58,7 @@ export default function RegisterPage() {
         accepted_terms: true,
         accepted_privacy: true,
       }, { auth: false });
-      // Verification is by email OTP for now — carry both: email to show the promoter
+      // Verification is by email OTP for now - carry both: email to show the promoter
       // where the code went, phone as the account key the verify endpoint uses.
       router.replace(`/verify?email=${encodeURIComponent(f.email)}&phone=${encodeURIComponent(f.phone)}`);
     } catch (err) {

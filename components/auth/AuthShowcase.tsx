@@ -7,14 +7,14 @@ type Slide = { image: string; quote: string; highlight?: string; author?: string
 
 /**
  * The left brand panel on the auth + onboarding screens, as an auto-advancing
- * carousel. Drop real images into `public/onboarding/` (slide-1/2/3) — until then
+ * carousel. Drop real images into `public/onboarding/` (slide-1/2/3) - until then
  * each slot falls back to a branded placeholder, so the slideshow works immediately.
  */
 const SLIDES: Slide[] = [
   {
     image: '/onboarding/slide-1.jpg',
     quote: 'Ralia connects me with brands that actually fit my audience.',
-    highlight: 'No endless emails or negotiations — just quality partnerships that make sense.',
+    highlight: 'No endless emails or negotiations - just quality partnerships that make sense.',
   },
   {
     image: '/onboarding/slide-2.jpg',
@@ -24,7 +24,7 @@ const SLIDES: Slide[] = [
   {
     image: '/onboarding/slide-3.jpg',
     quote: 'Accept, post, submit proof, get paid.',
-    highlight: 'Straightforward — and my reliability score keeps working for me.',
+    highlight: 'Straightforward - and my reliability score keeps working for me.',
   },
 ];
 

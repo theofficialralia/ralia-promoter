@@ -65,7 +65,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Profile preferences — edit in place, no re-onboarding */}
+      {/* Profile preferences - edit in place, no re-onboarding */}
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between">
           <div className="text-[12.5px] font-semibold text-muted">Your profile</div>
@@ -79,14 +79,14 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Channels — add/remove without re-onboarding */}
+      {/* Channels - add/remove without re-onboarding */}
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between">
           <div className="text-[12.5px] font-semibold text-muted">Your channels · {channelCount}</div>
           <button onClick={() => setEditing('channel')} className="text-[13px] font-semibold text-brand-700 hover:underline">+ Add channel</button>
         </div>
         <div className="card divide-y divide-rule px-5">
-          {channelCount === 0 && <div className="py-3 text-[13px] text-muted">No channels yet — add one to get offers.</div>}
+          {channelCount === 0 && <div className="py-3 text-[13px] text-muted">No channels yet - add one to get offers.</div>}
           {(channels.data ?? []).map((c) => (
             <div key={c.id} className="flex items-center justify-between py-3">
               <div>
@@ -109,7 +109,7 @@ export default function ProfilePage() {
           <button onClick={() => setEditing('bank')} className="text-[13px] font-semibold text-brand-700 hover:underline">+ Add account</button>
         </div>
         <div className="card divide-y divide-rule px-5">
-          {bankCount === 0 && <div className="py-3 text-[13px] text-muted">No bank account yet — add one to receive payouts.</div>}
+          {bankCount === 0 && <div className="py-3 text-[13px] text-muted">No bank account yet - add one to receive payouts.</div>}
           {(bank.data ?? []).map((b) => (
             <div key={b.id} className="flex items-center justify-between py-3">
               <div>
@@ -158,7 +158,7 @@ export default function ProfilePage() {
       {confirmDelete && (
         <ConfirmModal
           title="Delete your account?"
-          body={`This is permanent and can’t be undone. Account deletion isn’t available in-app yet — contact ${SUPPORT.email} and we’ll process it for you.`}
+          body={`This is permanent and can’t be undone. Account deletion isn’t available in-app yet - contact ${SUPPORT.email} and we’ll process it for you.`}
           confirmLabel="Email support"
           danger
           onClose={() => setConfirmDelete(false)}

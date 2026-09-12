@@ -196,7 +196,7 @@ export type AssignmentDetail = {
   promised_reach: number;
   /** The promoter's internal deadline (a contingency buffer before the client's run-window end). */
   due_at: string | null;
-  /** Client-facing run window — context only; the promoter is held to due_at. */
+  /** Client-facing run window - context only; the promoter is held to due_at. */
   campaign_starts_at: string | null;
   campaign_ends_at: string | null;
   /** §multi-day: scheduled-post progress. posts_required === 1 → a one-off. */
@@ -207,7 +207,7 @@ export type AssignmentDetail = {
   instructions: string | null;
   task: string;
   destination_url: string | null;
-  /** The link the promoter shares — routes through /r/:token so clicks are recorded. */
+  /** The link the promoter shares - routes through /r/:token so clicks are recorded. */
   tracking_url: string | null;
   channel: { platform: Platform | string; handle: string | null; effective_reach: number } | null;
   poster: { url: string; mime_type: string; size_bytes: number } | null;

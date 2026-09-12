@@ -18,7 +18,7 @@ function VerifyInner() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
-  // Resend cooldown — the code is time-bound (expires server-side in ~10 min), and
+  // Resend cooldown - the code is time-bound (expires server-side in ~10 min), and
   // resending is gated so it can't be spammed.
   const [seconds, setSeconds] = useState(45);
 
@@ -65,7 +65,7 @@ function VerifyInner() {
       <button onClick={resend} disabled={seconds > 0} className="mt-5 w-full text-center text-[14px] text-muted disabled:opacity-60">
         {seconds > 0
           ? `Didn’t get it? Resend in 0:${String(seconds).padStart(2, '0')}`
-          : resent ? 'Code re-sent — resend again' : 'Didn’t get it? Resend'}
+          : resent ? 'Code re-sent - resend again' : 'Didn’t get it? Resend'}
       </button>
     </div>
   );

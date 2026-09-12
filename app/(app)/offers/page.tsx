@@ -89,7 +89,7 @@ export default function OffersPage() {
               <span className="block text-[14px] font-bold text-warn">{status === 'AWAITING_APPROVAL' ? 'Profile under review' : 'Complete your profile to receive campaign offers'}</span>
               <span className="block text-[12.5px] text-body">
                 {status === 'AWAITING_APPROVAL'
-                  ? 'We’ll notify you once you’re approved — then offers appear here.'
+                  ? 'We’ll notify you once you’re approved - then offers appear here.'
                   : 'You can’t be matched to any campaign until your profile is complete.'}
               </span>
             </span>
@@ -112,9 +112,9 @@ export default function OffersPage() {
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Open offers" value={String(list.length)} accent="brand" />
-        <StatCard label="Avg offer fee" value={avgFee ? naira(avgFee) : '—'} accent="ok" />
-        <StatCard label="Your trust score" value={p ? `${p.trust_score} / 100` : '—'} accent="ink" />
-        <StatCard label="Weekly capacity" value={p ? `${p.max_campaigns_per_week}` : '—'} accent="warn" sub="campaigns / week" />
+        <StatCard label="Avg offer fee" value={avgFee ? naira(avgFee) : '-'} accent="ok" />
+        <StatCard label="Your trust score" value={p ? `${p.trust_score} / 100` : '-'} accent="ink" />
+        <StatCard label="Weekly capacity" value={p ? `${p.max_campaigns_per_week}` : '-'} accent="warn" sub="campaigns / week" />
       </div>
 
       {list.length > 3 && <SearchInput value={search} onChange={setSearch} placeholder="Search offers" />}
@@ -123,13 +123,13 @@ export default function OffersPage() {
         {list.length === 0 && (
           <div className="card grid place-items-center p-12 text-center text-muted">
             <div className="text-[15px] font-semibold text-ink">No offers right now</div>
-            <div className="mt-1 text-[13.5px]">Check back soon — new campaigns match to your channels.</div>
+            <div className="mt-1 text-[13.5px]">Check back soon - new campaigns match to your channels.</div>
           </div>
         )}
         {filtered.map((o) => (
           <div key={o.id} className="card overflow-hidden">
             <div className="grid lg:grid-cols-[1fr_360px]">
-              {/* Left — the ask */}
+              {/* Left - the ask */}
               <div className="p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -159,11 +159,11 @@ export default function OffersPage() {
                 )}
               </div>
 
-              {/* Right — the money (dark earn panel) */}
+              {/* Right - the money (dark earn panel) */}
               <div className="relative overflow-hidden bg-gradient-to-br from-[#2a0d0d] to-[#120708] p-5 text-white sm:p-6">
                 <div className="text-[13px] text-white/60">You earn</div>
                 <div className="text-[30px] font-extrabold leading-none">{naira(o.fee_minor)}</div>
-                <div className="mt-1 text-[12px] text-white/60">Paid to your balance after review — usually within 24 hours.</div>
+                <div className="mt-1 text-[12px] text-white/60">Paid to your balance after review - usually within 24 hours.</div>
 
                 <div className="mt-4 rounded-xl bg-white/10 p-3">
                   <div className="text-[11.5px] text-white/60">Expires in</div>
@@ -251,7 +251,7 @@ function OfferDetailModal({
           )}
 
           <div className="grid grid-cols-2 gap-2.5">
-            <Fact label="You earn" value={d.fee_min.amount_minor === d.fee.amount_minor ? d.fee.amount_display : `${d.fee_min.amount_display} – ${d.fee.amount_display}`} />
+            <Fact label="You earn" value={d.fee_min.amount_minor === d.fee.amount_minor ? d.fee.amount_display : `${d.fee_min.amount_display} - ${d.fee.amount_display}`} />
             <Fact label="Posts required" value={d.posts_required > 1 ? `${d.posts_required} · ${titleCase(d.cadence)}` : 'One-off'} />
             <Fact label="Target views" value={compactNumber(d.promised_reach) + (d.posts_required > 1 ? ' / post' : '')} />
             <Fact label="Accept before" value={countdown(d.expires_at)} />

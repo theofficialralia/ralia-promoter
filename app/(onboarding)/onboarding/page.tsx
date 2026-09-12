@@ -38,25 +38,25 @@ const opts = (items: [string, number][]): Opt[] => items.map(([label, value], i)
 
 const ROLE_QUESTIONS: Record<string, Question[]> = {
   DISTRIBUTOR: [
-    { id: 'dist_reach', role: 'DISTRIBUTOR', factor: 'audienceSize', multi: false, prompt: 'How many people do your posts usually reach?', subtitle: 'This helps us match you with campaigns of the right size.', options: opts([['Under 500', 0.2], ['500–2,000', 0.5], ['2,000–10,000', 0.8], ['10,000+', 1]]) },
-    { id: 'dist_freq', role: 'DISTRIBUTOR', factor: 'postingFrequency', multi: false, prompt: 'How often do you normally post?', options: opts([['Daily', 1], ['4–6 times a week', 0.8], ['2–3 times a week', 0.6], ['Once a week', 0.4], ['Occasionally', 0.2]]) },
+    { id: 'dist_reach', role: 'DISTRIBUTOR', factor: 'audienceSize', multi: false, prompt: 'How many people do your posts usually reach?', subtitle: 'This helps us match you with campaigns of the right size.', options: opts([['Under 500', 0.2], ['500-2,000', 0.5], ['2,000-10,000', 0.8], ['10,000+', 1]]) },
+    { id: 'dist_freq', role: 'DISTRIBUTOR', factor: 'postingFrequency', multi: false, prompt: 'How often do you normally post?', options: opts([['Daily', 1], ['4-6 times a week', 0.8], ['2-3 times a week', 0.6], ['Once a week', 0.4], ['Occasionally', 0.2]]) },
   ],
   CREATOR: [
     { id: 'cre_content', role: 'CREATOR', factor: 'contentBreadth', multi: true, prompt: 'What kind of content do you enjoy creating?', subtitle: 'Select all that apply', options: opts([['Short form videos', 1], ['UGC/Skit', 1], ['Product review', 1], ['Photo', 1], ['Graphic', 1]]) },
     { id: 'cre_equip', role: 'CREATOR', factor: 'equipment', multi: false, prompt: 'What do you create with?', options: opts([['Pro camera', 1], ['Good phone', 0.7], ['Basic phone', 0.4]]) },
     { id: 'cre_camera', role: 'CREATOR', factor: 'cameraComfort', multi: false, prompt: 'Are you comfortable on camera?', options: opts([['Yes', 1], ['Somewhat', 0.6], ['No', 0.2]]) },
-    { id: 'cre_turn', role: 'CREATOR', factor: 'turnaround', multi: false, prompt: 'How fast can you deliver?', options: opts([['Under 24h', 1], ['1–2 days', 0.7], ['3+ days', 0.4]]) },
+    { id: 'cre_turn', role: 'CREATOR', factor: 'turnaround', multi: false, prompt: 'How fast can you deliver?', options: opts([['Under 24h', 1], ['1-2 days', 0.7], ['3+ days', 0.4]]) },
   ],
   PARTICIPATOR: [
     { id: 'par_tasks', role: 'PARTICIPATOR', factor: 'taskBreadth', multi: true, prompt: 'Which of these tasks would you be happy to complete?', subtitle: 'Select all that apply', options: opts([['Install & sign up to an application', 1], ['Leave a Review on playstore/appstore/website', 1], ['Attend an event', 1], ['Drive Engagement', 1], ['Refer', 1]]) },
     { id: 'par_devices', role: 'PARTICIPATOR', factor: 'deviceCoverage', multi: true, prompt: 'Which devices can you use?', subtitle: 'Select all that apply', options: opts([['Phone', 1], ['Second phone', 1], ['Laptop', 1], ['Tablet', 1]]) },
     { id: 'par_multi', role: 'PARTICIPATOR', factor: 'multiStepWillingness', multi: false, prompt: 'Willing to do multi-step tasks?', options: opts([['Yes', 1], ['No', 0.2]]) },
-    { id: 'par_age', role: 'PARTICIPATOR', factor: 'agedAccounts', multi: false, prompt: 'How old are your social accounts?', options: opts([['2+ years', 1], ['1–2 years', 0.7], ['Under a year', 0.4], ['New', 0.2]]) },
+    { id: 'par_age', role: 'PARTICIPATOR', factor: 'agedAccounts', multi: false, prompt: 'How old are your social accounts?', options: opts([['2+ years', 1], ['1-2 years', 0.7], ['Under a year', 0.4], ['New', 0.2]]) },
   ],
 };
 
 // The self-reported factors the backend accepts (scoring.ts). Questions can carry
-// extra factors for UX (e.g. audienceSize) that are captured but not persisted —
+// extra factors for UX (e.g. audienceSize) that are captured but not persisted -
 // audience size is already covered by the channel's verified reach.
 const KNOWN_FACTORS = new Set([
   'postingFrequency', 'contentBreadth', 'equipment', 'cameraComfort', 'turnaround',
@@ -76,7 +76,7 @@ export default function OnboardingPage() {
   const profileQ = useQuery({ queryKey: ['profile'], queryFn: () => api.get<{ full_name: string | null }>('/v1/promoters/me/profile') });
   const firstName = (profileQ.data?.full_name ?? '').trim().split(/\s+/)[0] || '';
 
-  // Step 1 — profile
+  // Step 1 - profile
   const [cats, setCats] = useState<string[]>([]);
   const [langs, setLangs] = useState<string[]>([]);
   const [channelPlatform, setChannelPlatform] = useState<Platform>('WHATSAPP_STATUS');
@@ -85,13 +85,13 @@ export default function OnboardingPage() {
   const [analytics, setAnalytics] = useState<File | null>(null);
   const [maxWeek, setMaxWeek] = useState(3);
   const [communities, setCommunities] = useState<Community[]>([{ platform: 'TELEGRAM', participants: '', link: '' }]);
-  // Step 2 — bank
+  // Step 2 - bank
   const [bankCode, setBankCode] = useState('');
   const [acctNo, setAcctNo] = useState('');
   const [acctName, setAcctName] = useState('');
-  // Step 3 — roles
+  // Step 3 - roles
   const [roles, setRoles] = useState<string[]>([]);
-  // Step 4 — cinematic questions
+  // Step 4 - cinematic questions
   const [qIndex, setQIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
@@ -113,7 +113,7 @@ export default function OnboardingPage() {
     setBusy(true); setError(null);
     try {
       await api.put('/v1/promoters/me/profile', { preferred_categories: cats, languages_spoken: langs, max_campaigns_per_week: maxWeek });
-      // Every channel carries a link (mandatory — the admin verifies insights against
+      // Every channel carries a link (mandatory - the admin verifies insights against
       // it) and an optional screenshot (the admin verifies reach against it).
       const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
       if (analytics && channel?.id) {
@@ -228,7 +228,7 @@ export default function OnboardingPage() {
           <>
             <div className="mt-3 flex items-start gap-3">
               <button onClick={qBack} className="mt-1 flex shrink-0 items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">← back</button>
-              {/* Stack the copy and the opt-out button on narrow screens — side-by-side, the
+              {/* Stack the copy and the opt-out button on narrow screens - side-by-side, the
                   long button overflowed off the right edge and made the top unreachable. */}
               <div className="flex flex-1 flex-col gap-3 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-[14.5px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
@@ -364,7 +364,7 @@ function StepProfile(p: any) {
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">A few questions</h1>
-      <p className="mt-1 text-[13.5px] text-muted">Welcome to Ralia — this helps us position you and match the right campaigns.</p>
+      <p className="mt-1 text-[13.5px] text-muted">Welcome to Ralia - this helps us position you and match the right campaigns.</p>
       <div className="mt-6 space-y-5">
         <div><div className="mb-2 text-[13.5px] font-semibold text-ink">Categories / Niche you&apos;d promote</div><Chips options={CATEGORIES} selected={p.cats} onToggle={(v: string) => p.toggle(v, p.cats, p.setCats)} /></div>
         <div><div className="mb-2 text-[13.5px] font-semibold text-ink">How many languages do you speak</div><Chips options={LANGUAGES} selected={p.langs} onToggle={(v: string) => p.toggle(v, p.langs, p.setLangs)} /></div>
@@ -486,7 +486,7 @@ function StepRoles(p: any) {
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">How would you like to use Ralia</h1>
-      <p className="mt-1 text-[13.5px] text-muted">Pick what fits you — you can choose more than one. We&apos;ll ask a couple of quick questions for each.</p>
+      <p className="mt-1 text-[13.5px] text-muted">Pick what fits you - you can choose more than one. We&apos;ll ask a couple of quick questions for each.</p>
       <div className="mt-6 space-y-3">
         {ROLES.map((r) => {
           const on = p.roles.includes(r.value);

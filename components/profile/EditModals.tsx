@@ -40,7 +40,7 @@ function Chips({ options, selected, onToggle }: { options: { value: string; labe
   );
 }
 
-/** Edit categories, languages, weekly capacity and roles — no re-onboarding. */
+/** Edit categories, languages, weekly capacity and roles - no re-onboarding. */
 export function EditProfileModal({ profile, onClose }: { profile: Profile; onClose: () => void }) {
   const qc = useQueryClient();
   const [cats, setCats] = useState<string[]>(profile.preferred_categories ?? []);

@@ -12,8 +12,8 @@ const urbanist = Urbanist({
 });
 
 export const metadata: Metadata = {
-  title: 'Ralia — Promoters',
-  description: 'Get paid to promote campaigns you already fit — accept offers, post, submit proof, cash out.',
+  title: 'Ralia - Promoters',
+  description: 'Get paid to promote campaigns you already fit - accept offers, post, submit proof, cash out.',
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1 };

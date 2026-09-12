@@ -93,7 +93,7 @@ function WithdrawModal({ max, min, onClose, onDone }: { max: { amount_minor: num
       await api.post('/v1/withdrawals', { amount_minor: minor });
       onDone();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Could not request the withdrawal — add a bank account first.');
+      setError(e instanceof ApiError ? e.message : 'Could not request the withdrawal - add a bank account first.');
       setBusy(false);
     }
   }

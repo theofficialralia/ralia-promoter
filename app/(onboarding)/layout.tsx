@@ -5,7 +5,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useRequireAuth } from '@/lib/auth';
 
 /**
- * The "complete your profile" flow — a continuation of signup, so it uses the
+ * The "complete your profile" flow - a continuation of signup, so it uses the
  * same split-screen onboarding frame as register/verify (brand panel + form) and
  * deliberately shows no app tab-bar until the profile is submitted. Auth-guarded.
  */

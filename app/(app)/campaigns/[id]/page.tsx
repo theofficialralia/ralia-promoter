@@ -19,8 +19,8 @@ function fmtSize(bytes: number): string {
 /**
  * The promoter's internal deadline (due_at), formatted. `short` drives the deadline
  * chip; `full` is the human date. `urgent` flags <24h-left / overdue for styling.
- * This is deliberately the internal deadline — always earlier than the client's
- * run-window end — so the promoter aims for the buffered date, not the client's.
+ * This is deliberately the internal deadline - always earlier than the client's
+ * run-window end - so the promoter aims for the buffered date, not the client's.
  */
 function fmtDeadline(iso: string | null): { full: string; short: string; urgent: boolean } | null {
   if (!iso) return null;
@@ -33,11 +33,11 @@ function fmtDeadline(iso: string | null): { full: string; short: string; urgent:
   return { full, short, urgent: ms <= 0 || hours < 24 };
 }
 
-/** The client-facing run window, e.g. "5 Sep – 19 Sep", or null when no window set. */
+/** The client-facing run window, e.g. "5 Sep - 19 Sep", or null when no window set. */
 function fmtRunWindow(startsAt: string | null, endsAt: string | null): string | null {
   if (!endsAt) return null;
   const fmt = (iso: string) => new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
-  return startsAt ? `${fmt(startsAt)} – ${fmt(endsAt)}` : `runs to ${fmt(endsAt)}`;
+  return startsAt ? `${fmt(startsAt)} - ${fmt(endsAt)}` : `runs to ${fmt(endsAt)}`;
 }
 
 export default function AssignmentDetailPage() {
@@ -81,7 +81,7 @@ export default function AssignmentDetailPage() {
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">
         {/* Steps */}
         <div className="space-y-3">
-          <Step n={1} title="Download the poster" sub={a.poster ? `${a.poster.mime_type.split('/')[1]?.toUpperCase() ?? 'Image'} · ${fmtSize(a.poster.size_bytes)}` : 'The business asked Ralia to design this — check back shortly.'}>
+          <Step n={1} title="Download the poster" sub={a.poster ? `${a.poster.mime_type.split('/')[1]?.toUpperCase() ?? 'Image'} · ${fmtSize(a.poster.size_bytes)}` : 'The business asked Ralia to design this - check back shortly.'}>
             {a.poster && (
               // ?download=1 forces a real download (Content-Disposition / Cloudinary
               // fl_attachment) instead of opening the image inline in a new tab.
@@ -109,9 +109,9 @@ export default function AssignmentDetailPage() {
             n={(a.caption ? 3 : 2) + (a.tracking_url ? 1 : 0)}
             title={multiDay ? `Post on each scheduled day (${a.posts_approved}/${a.posts_required} approved)` : runWindow ? 'Keep it live through the run window' : 'Keep it live, then grab your proof'}
             sub={multiDay
-              ? "Submit a screenshot for each scheduled day below — you're paid per approved post."
+              ? "Submit a screenshot for each scheduled day below - you're paid per approved post."
               : deadline
-                ? `Submit your proof by ${deadline.full} — screenshot the view count and add it below.`
+                ? `Submit your proof by ${deadline.full} - screenshot the view count and add it below.`
                 : 'Screenshot the view count and submit it below.'}
           />
         </div>
@@ -123,8 +123,8 @@ export default function AssignmentDetailPage() {
               <span>You Earn</span>
               {deadline && <span className={deadline.urgent ? 'font-semibold text-[#ff9d9d]' : ''}>{deadline.short}</span>}
             </div>
-            <div className="mt-1 text-[26px] font-extrabold leading-none">{a.fee_min.amount_display} – {a.fee.amount_display}</div>
-            <div className="mt-2 text-[12px] text-white/55">Paid to your balance after review — pro-rata on your verified views.</div>
+            <div className="mt-1 text-[26px] font-extrabold leading-none">{a.fee_min.amount_display} - {a.fee.amount_display}</div>
+            <div className="mt-2 text-[12px] text-white/55">Paid to your balance after review - pro-rata on your verified views.</div>
             {deadline && (
               <div className="mt-3 border-t border-white/10 pt-2.5 text-[12px] text-white/60">
                 Deadline <span className="font-semibold text-white/85">{deadline.full}</span>
@@ -230,7 +230,7 @@ function SubmissionPreview({ submission: s, rejected, done, underReview }: { sub
         </div>
         <div className="flex items-center justify-between p-4">
           <div>
-            <div className="text-[18px] font-extrabold text-ink">{views != null ? compactNumber(views) : '—'}</div>
+            <div className="text-[18px] font-extrabold text-ink">{views != null ? compactNumber(views) : '-'}</div>
             <div className="text-[11.5px] text-muted">views</div>
           </div>
           <StatusPill status={verdict} />
@@ -334,7 +334,7 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
 function ReviewState() {
   return (
     <div className="mt-5 rounded-2xl border border-warn/30 bg-warn-wash p-4">
-      <div className="text-[14px] font-bold text-warn">Evidence received — under review</div>
+      <div className="text-[14px] font-bold text-warn">Evidence received - under review</div>
       <div className="text-[13px] text-body">We approve most proofs the same day. You’ll be paid to your balance once it clears.</div>
     </div>
   );
@@ -347,7 +347,7 @@ const SLOT_PILL: Record<DeliverySlot['status'], { label: string; cls: string }> 
   PENDING: { label: 'To do', cls: 'bg-wash text-muted' },
   SUBMITTED: { label: 'In review', cls: 'bg-warn-wash text-warn' },
   APPROVED: { label: 'Approved', cls: 'bg-ok-wash text-ok' },
-  REJECTED: { label: 'Rejected — redo', cls: 'bg-brand/10 text-brand-700' },
+  REJECTED: { label: 'Rejected - redo', cls: 'bg-brand/10 text-brand-700' },
   MISSED: { label: 'Missed', cls: 'bg-ink/10 text-muted' },
 };
 
