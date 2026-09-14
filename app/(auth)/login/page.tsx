@@ -20,9 +20,9 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('reason') === 'idle') {
-      setNotice('You were signed out after 10 minutes of inactivity.');
-    }
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason === 'idle') setNotice('You were signed out after 10 minutes of inactivity.');
+    else if (reason === 'reset') setNotice('Your password was reset. Sign in with your new password.');
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -53,6 +53,9 @@ export default function LoginPage() {
         <Field label="Password">
           <PasswordInput autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Your password" required />
         </Field>
+        <div className="-mt-1 text-right">
+          <Link href="/reset-password" className="text-[13px] font-semibold text-brand-700">Forgot password?</Link>
+        </div>
         {error && <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-[13px] text-brand-700">{error}</p>}
         <Button type="submit" size="lg" loading={busy} className="w-full">Sign in</Button>
 
