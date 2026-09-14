@@ -252,11 +252,15 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
 
   async function submit() {
     if (!file) return setError('Add a screenshot of your post’s view count.');
+    const viewCount = Number(views);
+    if (!views.trim() || !Number.isFinite(viewCount) || viewCount < 1) {
+      return setError('Enter your total view count - it decides your pay and whether the job needs more posts.');
+    }
     setBusy(true); setError(null);
     try {
       const form = new FormData();
       form.append('file', file);
-      if (views) form.append('claimed_views', views);
+      form.append('claimed_views', String(Math.round(viewCount)));
       if (url) form.append('public_url', url);
       // §multi-day: proof answers a specific scheduled post.
       if (deliverySlotId) form.append('delivery_slot_id', deliverySlotId);
@@ -297,8 +301,8 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
           </button>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Field label="Your total view count">
-              <input type="number" inputMode="numeric" className="input" value={views} onChange={(e) => setViews(e.target.value)} placeholder="e.g. 840" />
+            <Field label="Your total view count (required)">
+              <input type="number" inputMode="numeric" min={1} required className="input" value={views} onChange={(e) => setViews(e.target.value)} placeholder="e.g. 840" />
             </Field>
             <Field label="Public URL (optional for WhatsApp)">
               <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourlink" />
