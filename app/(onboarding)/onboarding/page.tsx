@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { IconArrowLeft, IconArrowRight, IconCheck, IconClock, IconUpload } from '@/components/brand/icons';
 import { api, ApiError, type Platform } from '@/lib/api';
 import { CATEGORIES } from '@/lib/categories';
 
@@ -227,13 +228,13 @@ export default function OnboardingPage() {
         {step === 4 && currentQ && (
           <>
             <div className="mt-3 flex items-start gap-3">
-              <button onClick={qBack} className="mt-1 flex shrink-0 items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">← back</button>
+              <button onClick={qBack} className="mt-1 flex shrink-0 items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><IconArrowLeft className="h-4 w-4" /> back</button>
               {/* Stack the copy and the opt-out button on narrow screens - side-by-side, the
                   long button overflowed off the right edge and made the top unreachable. */}
               <div className="flex flex-1 flex-col gap-3 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-[14.5px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
                 <button onClick={() => void dropRole(currentQ.role)} className="shrink-0 self-start rounded-full bg-brand px-4 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90 sm:self-auto">
-                  Not interested in this role anymore ↪
+                  Not interested in this role anymore
                 </button>
               </div>
             </div>
@@ -274,8 +275,8 @@ export default function OnboardingPage() {
 
               {error && <p className="mt-4 text-[12px] text-brand-700">{error}</p>}
               <div className="mt-8 flex w-full max-w-xl gap-3">
-                <button onClick={() => setShowSkip(true)} className="flex-1 rounded-2xl border border-rule bg-paper py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink/30">Skip this process →</button>
-                <button onClick={qNext} disabled={busy || !(answers[currentQ.id]?.length)} className="flex-1 rounded-2xl bg-brand py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-40">Continue →</button>
+                <button onClick={() => setShowSkip(true)} className="flex-1 rounded-2xl border border-rule bg-paper py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink/30">Skip this process</button>
+                <button onClick={qNext} disabled={busy || !(answers[currentQ.id]?.length)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-40">Continue <IconArrowRight className="h-4 w-4" /></button>
               </div>
             </div>
           </>
@@ -285,7 +286,7 @@ export default function OnboardingPage() {
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 140, damping: 16 }}
               className="grid h-28 w-28 place-items-center rounded-full bg-warn/10">
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-warn text-[26px] text-white">🕐</span>
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-warn text-white"><IconClock className="h-7 w-7" /></span>
             </motion.div>
             <span className="mt-6 rounded-full bg-warn/10 px-5 py-2 text-[15px] font-bold text-warn">Under review</span>
             <h1 className="mt-4 text-[24px] font-extrabold tracking-tight text-ink">Your profile is in the queue.</h1>
@@ -293,7 +294,7 @@ export default function OnboardingPage() {
             <div className="mt-8 w-full max-w-md overflow-hidden rounded-2xl border border-rule bg-paper">
               {[['Onboarding / Registration', true], ['Bank Details', true], ['Role selection', true], ['Admin review', false]].map(([label, done]) => (
                 <div key={label as string} className="flex items-center gap-3 border-b border-rule px-4 py-3.5 last:border-0">
-                  <span className={`grid h-6 w-6 place-items-center rounded-full text-[13px] text-white ${done ? 'bg-ok' : 'bg-warn'}`}>{done ? '✓' : '🕐'}</span>
+                  <span className={`grid h-6 w-6 place-items-center rounded-full text-white ${done ? 'bg-ok' : 'bg-warn'}`}>{done ? <IconCheck className="h-3.5 w-3.5" /> : <IconClock className="h-3.5 w-3.5" />}</span>
                   <span className="text-[14.5px] font-medium text-ink">{label as string}</span>
                 </div>
               ))}
@@ -332,7 +333,7 @@ function ProgressHeader({ pos, total, onBack }: { pos: number; total: number; on
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between text-[13px] font-semibold">
-        {onBack ? <button onClick={onBack} className="text-muted hover:text-ink">← Back</button> : <span className="text-ink">Complete your profile</span>}
+        {onBack ? <button onClick={onBack} className="inline-flex items-center gap-1.5 text-muted hover:text-ink"><IconArrowLeft className="h-4 w-4" /> Back</button> : <span className="text-ink">Complete your profile</span>}
         <span className="text-muted tabular-nums">{pos}/{total}</span>
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-rule">
@@ -382,7 +383,7 @@ function StepProfile(p: any) {
           </div>
           <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center transition hover:border-brand/40">
             <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => p.setAnalytics(e.target.files?.[0] ?? null)} />
-            <span className="text-[13px] font-semibold text-ink">{p.analytics ? p.analytics.name : '↑ Upload your analytics'}</span>
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink">{p.analytics ? p.analytics.name : <><IconUpload className="h-4 w-4" /> Upload your analytics</>}</span>
             <span className="text-[12px] text-muted">JPG, PNG up to 5MB</span>
           </label>
         </div>
@@ -413,7 +414,7 @@ function StepProfile(p: any) {
                 </div>
                 <label className="flex cursor-pointer items-center gap-2 text-[12.5px]">
                   <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, screenshot: f } : x)); }} />
-                  <span className="rounded-full border border-dashed border-rule px-3 py-1.5 font-semibold text-ink transition hover:border-brand/40">{c.screenshot ? c.screenshot.name : '↑ Screenshot (optional)'}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-rule px-3 py-1.5 font-semibold text-ink transition hover:border-brand/40">{c.screenshot ? c.screenshot.name : <><IconUpload className="h-3.5 w-3.5" /> Screenshot (optional)</>}</span>
                 </label>
               </div>
             ))}
@@ -422,7 +423,7 @@ function StepProfile(p: any) {
         </div>
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || (p.channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(p.channelUrl))} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || (p.channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(p.channelUrl))} onClick={p.onNext}>Next <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }
@@ -465,7 +466,7 @@ function StepBank(p: any) {
         {resolving && <p className="text-[13px] text-muted">Checking account…</p>}
         {p.acctName && !resolving && (
           <div className="flex items-start gap-2 rounded-xl border border-ok/30 bg-ok/5 px-4 py-3 text-[13px]">
-            <span className="mt-0.5 text-ok">✓</span>
+            <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
             <span>
               <span className="font-semibold text-ink">{p.acctName}</span>
               {bypassed && <span className="ml-1.5 rounded bg-warn/15 px-1.5 py-0.5 text-[11px] font-semibold text-warn">dev</span>}
@@ -476,7 +477,7 @@ function StepBank(p: any) {
         {resolveErr && !resolving && <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-[13px] text-brand-700">{resolveErr}</p>}
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!p.bankCode || p.acctNo.length !== 10 || !p.acctName.trim() || resolving} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!p.bankCode || p.acctNo.length !== 10 || !p.acctName.trim() || resolving} onClick={p.onNext}>Next <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }
@@ -494,13 +495,13 @@ function StepRoles(p: any) {
             <button key={r.value} type="button" onClick={() => p.toggle(r.value, p.roles, p.setRoles)}
               className={`flex w-full items-start justify-between gap-3 rounded-2xl border p-4 text-left transition ${on ? 'border-brand bg-brand/[0.04]' : 'border-rule hover:border-ink/30'}`}>
               <span><span className="block text-[15px] font-bold text-ink">{r.label}</span><span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{r.blurb}</span></span>
-              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? 'border-brand bg-brand text-[12px] text-white' : 'border-rule'}`}>{on ? '✓' : ''}</span>
+              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? 'border-brand bg-brand text-white' : 'border-rule'}`}>{on && <IconCheck className="h-3 w-3" />}</span>
             </button>
           );
         })}
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.roles.length === 0} onClick={p.onNext}>Continue →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.roles.length === 0} onClick={p.onNext}>Continue <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }

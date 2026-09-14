@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { Spinner } from '@/components/ui/Spinner';
 import { StatusPill } from '@/components/ui/StatusPill';
-import { IconArrowLeft, IconCopy } from '@/components/brand/icons';
+import { IconArrowLeft, IconArrowRight, IconCheck, IconClose, IconCopy, IconDownload, IconUpload } from '@/components/brand/icons';
 import { api, ApiError, type AssignmentDetail, type DeliverySlot } from '@/lib/api';
 import { compactNumber, titleCase } from '@/lib/format';
 
@@ -86,7 +86,7 @@ export default function AssignmentDetailPage() {
               // ?download=1 forces a real download (Content-Disposition / Cloudinary
               // fl_attachment) instead of opening the image inline in a new tab.
               <a href={`${a.poster.url}${a.poster.url.includes('?') ? '&' : '?'}download=1`} download>
-                <Button variant="secondary">↓ Download</Button>
+                <Button variant="secondary"><IconDownload className="h-4 w-4" /> Download</Button>
               </a>
             )}
           </Step>
@@ -176,7 +176,7 @@ export default function AssignmentDetailPage() {
           {/* Submit proof */}
           {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
           {underReview && !a.submission && <ReviewState />}
-          {done && <div className="mt-5 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok">Approved and paid to your balance. 🎉</div>}
+          {done && <div className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok"><IconCheck className="h-[18px] w-[18px] shrink-0" /> Approved and paid to your balance.</div>}
         </>
       )}
     </div>
@@ -294,7 +294,7 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
             onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) { setFile(f); setError(null); } }}
             className={`flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${dragging ? 'border-brand bg-brand/10' : 'border-brand/40 bg-brand/5'}`}
           >
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-brand text-[22px] text-white">⬆</span>
+            <span className="grid h-14 w-14 place-items-center rounded-full bg-brand text-white"><IconUpload className="h-6 w-6" /></span>
             <span className="mt-3 text-[16px] font-bold text-ink">{file ? file.name : 'Drop your evidence, or click to browse'}</span>
             <span className="mt-1 text-[12.5px] text-muted">PNG or JPG, under 5 MB. Must show your status view count.</span>
             <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setError(null); }} />
@@ -310,7 +310,7 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
           </div>
 
           {error && <p className="mt-2 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-4 w-full sm:w-auto" loading={busy} onClick={submit}>Submit Proof →</Button>
+          <Button size="lg" className="mt-4 w-full sm:w-auto" loading={busy} onClick={submit}>Submit Proof <IconArrowRight className="h-4 w-4" /></Button>
         </div>
 
         <div className="card h-max p-4">
@@ -320,13 +320,13 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
               <div className="text-[11px] text-muted">Your post</div>
               <div className="mt-1 text-[20px] font-extrabold text-ink">842</div>
               <div className="text-[11px] text-muted">Views</div>
-              <div className="mt-2 text-[11.5px] font-semibold text-ok">✓ View count visible</div>
+              <div className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-ok"><IconCheck className="h-3.5 w-3.5" /> View count visible</div>
             </div>
             <div className="rounded-xl border border-brand/40 p-3 text-center">
               <div className="text-[11px] text-muted">Your post</div>
               <div className="mt-1 text-[20px] font-extrabold text-ink">?</div>
               <div className="text-[11px] text-muted">Views</div>
-              <div className="mt-2 text-[11.5px] font-semibold text-brand-700">✕ View count cropped</div>
+              <div className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-brand-700"><IconClose className="h-3.5 w-3.5" /> View count cropped</div>
             </div>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { IconDownload } from '@/components/brand/icons';
 import { api, ApiError, type Wallet, type Withdrawal } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
 
@@ -60,7 +61,7 @@ export default function EarningsPage() {
         {txns.map((t) => (
           <div key={t.id} className="card flex items-center justify-between gap-3 p-4">
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-wash text-[16px] text-muted">↓</span>
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-wash text-muted"><IconDownload className="h-[18px] w-[18px]" /></span>
               <div>
                 <div className="text-[14px] font-bold text-ink">Withdrawal{t.paid_ref ? ` · ${t.paid_ref}` : ''}</div>
                 <div className="text-[12px] text-muted">{relativeTime(t.created_at)}</div>

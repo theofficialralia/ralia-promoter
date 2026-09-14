@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { IconCheck } from '@/components/brand/icons';
 import { api, ApiError, type Platform, type Profile } from '@/lib/api';
 import { CATEGORIES } from '@/lib/categories';
 
@@ -181,7 +182,7 @@ export function AddBankModal({ onClose }: { onClose: () => void }) {
         {resolving && <p className="text-[12.5px] text-muted">Checking account…</p>}
         {acctName && (
           <div className="rounded-xl border border-ok/30 bg-ok-wash px-4 py-3">
-            <p className="text-[13.5px] font-bold text-ink">✓ {acctName}</p>
+            <p className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-ink"><IconCheck className="h-4 w-4 text-ok" /> {acctName}</p>
             <p className="text-[12px] text-muted">If this isn’t you, check the number and bank.</p>
           </div>
         )}

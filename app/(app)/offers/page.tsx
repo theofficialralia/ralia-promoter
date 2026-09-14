@@ -10,6 +10,7 @@ import { SearchInput } from '@/components/ui/SearchInput';
 import { Spinner } from '@/components/ui/Spinner';
 import { StatCard } from '@/components/ui/StatCard';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { IconArrowRight, IconWarning } from '@/components/brand/icons';
 import { api, ApiError, type Offer, type OfferDetail, type Profile } from '@/lib/api';
 import { compactNumber, countdown, naira, titleCase } from '@/lib/format';
 
@@ -84,7 +85,7 @@ export default function OffersPage() {
       {status && status !== 'ACTIVE' && (
         <Link href="/onboarding" className="mb-5 block rounded-2xl border border-warn/40 bg-warn-wash px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warn/15 text-warn">⚠</span>
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-warn/15 text-warn"><IconWarning className="h-[18px] w-[18px]" /></span>
             <span>
               <span className="block text-[14px] font-bold text-warn">{status === 'AWAITING_APPROVAL' ? 'Profile under review' : 'Complete your profile to receive campaign offers'}</span>
               <span className="block text-[12.5px] text-body">
@@ -98,7 +99,7 @@ export default function OffersPage() {
             <div className="mt-3 border-t border-warn/20 pt-3">
               <div className="mb-1.5 flex items-center justify-between text-[12px] font-semibold text-warn">
                 <span>Still to do</span>
-                <span>{p.missing.length} step{p.missing.length === 1 ? '' : 's'} left →</span>
+                <span>{p.missing.length} step{p.missing.length === 1 ? '' : 's'} left</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {p.missing.map((m) => (
@@ -146,12 +147,12 @@ export default function OffersPage() {
                   <p className="mt-1 text-[13.5px] text-body">{taskForRole(o.role)}</p>
                 </div>
 
-                <button type="button" onClick={() => setDetailId(o.id)} className="mt-3 text-[13px] font-semibold text-brand-700 hover:underline">
-                  View campaign details →
+                <button type="button" onClick={() => setDetailId(o.id)} className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-brand-700 hover:underline">
+                  View campaign details <IconArrowRight className="h-3.5 w-3.5" />
                 </button>
 
                 <div className="mt-3 flex gap-2.5">
-                  <Button className="flex-1" loading={accept.isPending && accept.variables === o.id} onClick={() => accept.mutate(o.id)}>Accept →</Button>
+                  <Button className="flex-1" loading={accept.isPending && accept.variables === o.id} onClick={() => accept.mutate(o.id)}>Accept <IconArrowRight className="h-4 w-4" /></Button>
                   <Button variant="secondary" className="flex-1" loading={decline.isPending && decline.variables === o.id} onClick={() => decline.mutate(o.id)}>Decline</Button>
                 </div>
                 {accept.error instanceof ApiError && accept.variables === o.id && (
@@ -276,7 +277,7 @@ function OfferDetailModal({
           {error && <p className="text-[12px] text-brand-700">{error}</p>}
 
           <div className="flex gap-2.5 pt-1">
-            <Button className="flex-1" loading={accepting} onClick={onAccept}>Accept →</Button>
+            <Button className="flex-1" loading={accepting} onClick={onAccept}>Accept <IconArrowRight className="h-4 w-4" /></Button>
             <Button variant="secondary" className="flex-1" loading={declining} onClick={onDecline}>Decline</Button>
           </div>
         </div>
