@@ -15,9 +15,13 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+/** Sign out after this long with no interaction (Victory: "log off after 10 minutes of inactivity"). */
+const IDLE_LOGOUT_MS = 10 * 60 * 1000;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const loadMe = useCallback(async () => {
     if (!session.access) { setUser(null); setLoading(false); return; }
@@ -36,6 +40,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) await api.post('/v1/auth/logout', { refresh_token: token }).catch(() => {});
     session.clear(); setUser(null);
   }, []);
+
+  // Idle logout: while signed in, inactivity beyond IDLE_LOGOUT_MS ends the session and
+  // returns to login. Ref-based timer so activity never re-renders; listeners attached once.
+  useEffect(() => {
+    if (!user) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const onIdle = () => { void logout(); router.replace('/login?reason=idle'); };
+    const reset = () => { clearTimeout(timer); timer = setTimeout(onIdle, IDLE_LOGOUT_MS); };
+    const events: (keyof WindowEventMap)[] = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+    for (const e of events) window.addEventListener(e, reset, { passive: true });
+    reset();
+    return () => { clearTimeout(timer); for (const e of events) window.removeEventListener(e, reset); };
+  }, [user, logout, router]);
 
   const value = useMemo<AuthState>(() => ({ user, loading, refresh: loadMe, setTokens, logout }), [user, loading, loadMe, setTokens, logout]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
