@@ -12,7 +12,8 @@ import { StatCard } from '@/components/ui/StatCard';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { IconArrowRight, IconWarning } from '@/components/brand/icons';
 import { api, ApiError, type Offer, type OfferDetail, type Profile } from '@/lib/api';
-import { compactNumber, countdown, naira, titleCase } from '@/lib/format';
+import { Countdown } from '@/components/ui/Countdown';
+import { compactNumber, naira, titleCase } from '@/lib/format';
 
 /** Friendly labels for the profile-completion checklist. */
 function missingLabel(key: string): string {
@@ -137,9 +138,15 @@ export default function OffersPage() {
                     <button type="button" onClick={() => setDetailId(o.id)} className="text-left text-[17px] font-extrabold text-ink transition hover:text-brand-700">
                       {o.campaign_name}
                     </button>
-                    <div className="mt-0.5 text-[12.5px] text-muted">{titleCase(o.role)} · expires in {countdown(o.expires_at)}</div>
+                    <div className="mt-0.5 text-[12.5px] text-muted">{titleCase(o.role)} · expires in <Countdown to={o.expires_at} className="font-semibold tabular-nums text-ink" /></div>
                   </div>
                   <span className="shrink-0 rounded-full bg-ok-wash px-2.5 py-1 text-[11px] font-bold text-ok">● New</span>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-wash px-3 py-1.5 text-[12.5px] font-semibold text-ink">
+                    Target <span className="tabular-nums">{compactNumber(o.promised_reach)}</span> views
+                  </span>
                 </div>
 
                 <div className="mt-4 rounded-2xl bg-wash p-4">
@@ -166,9 +173,15 @@ export default function OffersPage() {
                 <div className="text-[30px] font-extrabold leading-none">{naira(o.fee_minor)}</div>
                 <div className="mt-1 text-[12px] text-white/60">Paid to your balance after review - usually within 24 hours.</div>
 
-                <div className="mt-4 rounded-xl bg-white/10 p-3">
-                  <div className="text-[11.5px] text-white/60">Expires in</div>
-                  <div className="text-[17px] font-bold">{countdown(o.expires_at)}</div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-xl bg-white/10 p-3">
+                    <div className="text-[11.5px] text-white/60">Target views</div>
+                    <div className="text-[17px] font-bold tabular-nums">{compactNumber(o.promised_reach)}</div>
+                  </div>
+                  <div className="rounded-xl bg-white/10 p-3">
+                    <div className="text-[11.5px] text-white/60">Expires in</div>
+                    <Countdown to={o.expires_at} className="block text-[17px] font-bold tabular-nums" />
+                  </div>
                 </div>
 
                 {o.fit_pct != null && (
@@ -204,7 +217,7 @@ export default function OffersPage() {
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
+function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-xl bg-wash p-3">
       <div className="text-[11.5px] font-semibold text-muted">{label}</div>
@@ -255,7 +268,7 @@ function OfferDetailModal({
             <Fact label="You earn" value={d.fee_min.amount_minor === d.fee.amount_minor ? d.fee.amount_display : `${d.fee_min.amount_display} - ${d.fee.amount_display}`} />
             <Fact label="Posts required" value={d.posts_required > 1 ? `${d.posts_required} · ${titleCase(d.cadence)}` : 'One-off'} />
             <Fact label="Target views" value={compactNumber(d.promised_reach) + (d.posts_required > 1 ? ' / post' : '')} />
-            <Fact label="Accept before" value={countdown(d.expires_at)} />
+            <Fact label="Accept before" value={<Countdown to={d.expires_at} className="tabular-nums" />} />
           </div>
 
           {d.channel && (

@@ -103,6 +103,7 @@ export type Offer = {
   campaign_name: string;
   role: string;
   fee_minor: number;
+  promised_reach: number;
   expires_at: string;
   status: string;
   fit_pct: number | null;
