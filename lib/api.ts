@@ -232,6 +232,16 @@ export type LeaderboardRow = { rank: number; display_name: string; points: numbe
 export type Leaderboard = { season: string; total: number; top: LeaderboardRow[]; me: LeaderboardRow | null };
 export type PointBreakdown = { type: string; points: number };
 export type NextTier = { tier: PromoterTier; points_to_go: number };
+export type PointRules = {
+  delivery_completed: number;
+  on_time: number;
+  quality_clean: number;
+  over_delivery_max: number;
+  over_cap_ratio: number;
+  penalty_no_show: number;
+  penalty_rejected: number;
+  penalty_duplicate: number;
+};
 export type MyScore = {
   season: string;
   season_points: number;

@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Spinner } from '@/components/ui/Spinner';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { api, type Leaderboard, type MyScore, type PromoterTier } from '@/lib/api';
+import { api, type Leaderboard, type MyScore, type PointRules, type PromoterTier } from '@/lib/api';
 
 const TIER: Record<PromoterTier, { label: string; badge: string; dot: string }> = {
   BRONZE: { label: 'Bronze', badge: 'bg-[#b5744a]/15 text-[#a5623a]', dot: 'bg-[#b5744a]' },
@@ -39,6 +39,7 @@ function TierBadge({ tier }: { tier: PromoterTier }) {
 export default function LeaderboardPage() {
   const board = useQuery({ queryKey: ['leaderboard'], queryFn: () => api.get<Leaderboard>('/v1/leaderboard') });
   const score = useQuery({ queryKey: ['my-score'], queryFn: () => api.get<MyScore>('/v1/leaderboard/me') });
+  const rules = useQuery({ queryKey: ['point-rules'], queryFn: () => api.get<PointRules>('/v1/leaderboard/rules') });
 
   if (board.isLoading || score.isLoading) return <div className="grid h-64 place-items-center text-brand"><Spinner className="h-7 w-7" /></div>;
   const b = board.data!;
@@ -124,6 +125,53 @@ export default function LeaderboardPage() {
           </>
         )}
       </div>
+
+      {/* How points work */}
+      {rules.data && <HowPointsWork rules={rules.data} />}
+    </div>
+  );
+}
+
+function HowPointsWork({ rules }: { rules: PointRules }) {
+  const earns: [string, string][] = [
+    [`+${rules.delivery_completed}`, 'Deliver an approved post'],
+    [`+${rules.on_time}`, 'Deliver before your deadline'],
+    [`+${rules.quality_clean}`, 'Clean proof (no duplicate flag)'],
+    [`up to +${rules.over_delivery_max}`, `Over-deliver — beat your target (up to ${rules.over_cap_ratio}×), once verified`],
+  ];
+  const loses: [string, string][] = [
+    [`−${rules.penalty_no_show}`, 'Miss a post’s deadline'],
+    [`−${rules.penalty_rejected}`, 'Submission rejected'],
+    [`−${rules.penalty_duplicate}`, 'Duplicate screenshot'],
+  ];
+  return (
+    <div className="mt-8">
+      <h2 className="text-[15px] font-extrabold text-ink">How points work</h2>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        <div className="card p-5">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-ok">You earn</div>
+          <ul className="mt-3 space-y-2.5">
+            {earns.map(([pts, label]) => (
+              <li key={label} className="flex items-start gap-3 text-[13.5px]">
+                <span className="w-16 shrink-0 font-extrabold tabular-nums text-ok">{pts}</span>
+                <span className="text-body">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="card p-5">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-brand-700">You lose</div>
+          <ul className="mt-3 space-y-2.5">
+            {loses.map(([pts, label]) => (
+              <li key={label} className="flex items-start gap-3 text-[13.5px]">
+                <span className="w-16 shrink-0 font-extrabold tabular-nums text-brand-700">{pts}</span>
+                <span className="text-body">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <p className="mt-3 text-[12.5px] text-muted">Points build your rank and tier. Higher tiers unlock campaigns reserved for top promoters.</p>
     </div>
   );
 }

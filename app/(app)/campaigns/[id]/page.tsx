@@ -158,6 +158,7 @@ export default function AssignmentDetailPage() {
           slots={a.slots}
           assignmentId={a.id}
           channelName={channelName}
+          target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach}
           onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })}
         />
       ) : (
@@ -174,7 +175,7 @@ export default function AssignmentDetailPage() {
           {a.submission && <SubmissionPreview submission={a.submission} rejected={rejected} done={done} underReview={underReview} />}
 
           {/* Submit proof */}
-          {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
+          {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
           {underReview && !a.submission && <ReviewState />}
           {done && <div className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok"><IconCheck className="h-[18px] w-[18px] shrink-0" /> Approved and paid to your balance.</div>}
         </>
@@ -240,7 +241,7 @@ function SubmissionPreview({ submission: s, rejected, done, underReview }: { sub
   );
 }
 
-function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayLabel, onDone }: { assignmentId: string; channelName: string | null; deadline: string | null; deliverySlotId?: string; dayLabel?: string; onDone: () => void }) {
+function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayLabel, target, onDone }: { assignmentId: string; channelName: string | null; deadline: string | null; deliverySlotId?: string; dayLabel?: string; target?: number; onDone: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [views, setViews] = useState('');
   const [url, setUrl] = useState('');
@@ -309,6 +310,16 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
             </Field>
           </div>
 
+          {target ? (
+            Number(views) > target ? (
+              <div className="mt-3 rounded-xl border border-ok/30 bg-ok-wash px-4 py-3 text-[12.5px] text-ink">
+                <b className="font-bold text-ok">Above your {compactNumber(target)} target.</b> Over-delivering earns bonus leaderboard points once an admin verifies your count.
+              </div>
+            ) : (
+              <p className="mt-3 text-[12px] text-muted">Your target is <b className="font-semibold text-ink">{compactNumber(target)}</b> views. Delivering on time and getting verified earns leaderboard points — beat your target for a bonus.</p>
+            )
+          ) : null}
+
           {error && <p className="mt-2 text-[12px] text-brand-700">{error}</p>}
           <Button size="lg" className="mt-4 w-full sm:w-auto" loading={busy} onClick={submit}>Submit Proof <IconArrowRight className="h-4 w-4" /></Button>
         </div>
@@ -359,7 +370,7 @@ function fmtSlotDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-function DeliveryTimeline({ slots, assignmentId, channelName, onDone }: { slots: DeliverySlot[]; assignmentId: string; channelName: string | null; onDone: () => void }) {
+function DeliveryTimeline({ slots, assignmentId, channelName, target, onDone }: { slots: DeliverySlot[]; assignmentId: string; channelName: string | null; target?: number; onDone: () => void }) {
   // Guide the promoter to the earliest post still needing proof.
   const activeId = slots.find((s) => s.submittable)?.id ?? null;
   const [openId, setOpenId] = useState<string | null>(activeId);
@@ -411,6 +422,7 @@ function DeliveryTimeline({ slots, assignmentId, channelName, onDone }: { slots:
                     deadline={fmtSlotDate(slot.due_at)}
                     deliverySlotId={slot.id}
                     dayLabel={`Day ${slot.index}`}
+                    target={target}
                     onDone={onDone}
                   />
                 </div>
