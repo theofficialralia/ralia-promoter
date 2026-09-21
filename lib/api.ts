@@ -229,7 +229,7 @@ export type Wallet = { available: Money; pending_withdrawal: Money; withdrawal_m
 // ── Leaderboard & tiers ──────────────────────────────────────
 export type PromoterTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
 export type LeaderboardRow = { rank: number; display_name: string; points: number; tier: PromoterTier; is_me: boolean };
-export type Leaderboard = { season: string; total: number; top: LeaderboardRow[]; me: LeaderboardRow | null };
+export type Leaderboard = { season: string; season_ends_at: string | null; total: number; top: LeaderboardRow[]; me: LeaderboardRow | null };
 export type PointBreakdown = { type: string; points: number };
 export type NextTier = { tier: PromoterTier; points_to_go: number };
 export type PointRules = {

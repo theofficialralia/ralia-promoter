@@ -55,6 +55,18 @@ export default function LeaderboardPage() {
     <div>
       <PageHeader crumb="Season" title="Leaderboard" subtitle="Earn points for great work — deliver on time, over-deliver, keep your proof clean — and climb the ranks." />
 
+      {b.season_ends_at && (() => {
+        const ends = new Date(b.season_ends_at);
+        const days = Math.ceil((ends.getTime() - Date.now()) / 86_400_000);
+        const when = days <= 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`;
+        return (
+          <p className="-mt-2 mb-5 inline-flex items-center gap-2 rounded-full bg-wash px-3.5 py-1.5 text-[12.5px] font-semibold text-ink">
+            Season ends {when}
+            <span className="font-normal text-muted">· {ends.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </p>
+        );
+      })()}
+
       {/* Your score */}
       <div className="card overflow-hidden">
         <div className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-6">
