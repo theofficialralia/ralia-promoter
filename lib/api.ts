@@ -225,4 +225,22 @@ export type AssignmentDetail = {
 };
 
 export type Wallet = { available: Money; pending_withdrawal: Money; withdrawal_minimum: Money; can_withdraw: boolean };
+
+// ── Leaderboard & tiers ──────────────────────────────────────
+export type PromoterTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+export type LeaderboardRow = { rank: number; display_name: string; points: number; tier: PromoterTier; is_me: boolean };
+export type Leaderboard = { season: string; total: number; top: LeaderboardRow[]; me: LeaderboardRow | null };
+export type PointBreakdown = { type: string; points: number };
+export type NextTier = { tier: PromoterTier; points_to_go: number };
+export type MyScore = {
+  season: string;
+  season_points: number;
+  lifetime_points: number;
+  rolling_90_points: number;
+  rank: number | null;
+  tier: PromoterTier;
+  next_tier: NextTier | null;
+  streak: number;
+  breakdown: PointBreakdown[];
+};
 export type Withdrawal = { id: string; amount: Money; status: string; paid_ref: string | null; created_at: string };
