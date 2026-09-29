@@ -3,9 +3,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
+import { IconArrowLeft, IconArrowRight, IconCheck, IconClock, IconUpload } from '@/components/brand/icons';
 import { api, ApiError, type Platform } from '@/lib/api';
 import { CATEGORIES } from '@/lib/categories';
 
@@ -38,32 +39,32 @@ const opts = (items: [string, number][]): Opt[] => items.map(([label, value], i)
 
 const ROLE_QUESTIONS: Record<string, Question[]> = {
   DISTRIBUTOR: [
-    { id: 'dist_reach', role: 'DISTRIBUTOR', factor: 'audienceSize', multi: false, prompt: 'How many people do your posts usually reach?', subtitle: 'This helps us match you with campaigns of the right size.', options: opts([['Under 500', 0.2], ['500–2,000', 0.5], ['2,000–10,000', 0.8], ['10,000+', 1]]) },
-    { id: 'dist_freq', role: 'DISTRIBUTOR', factor: 'postingFrequency', multi: false, prompt: 'How often do you normally post?', options: opts([['Daily', 1], ['4–6 times a week', 0.8], ['2–3 times a week', 0.6], ['Once a week', 0.4], ['Occasionally', 0.2]]) },
+    { id: 'dist_reach', role: 'DISTRIBUTOR', factor: 'audienceSize', multi: false, prompt: 'How many people do your posts usually reach?', subtitle: 'This helps us match you with campaigns of the right size.', options: opts([['Under 500', 0.2], ['500-2,000', 0.5], ['2,000-10,000', 0.8], ['10,000+', 1]]) },
+    { id: 'dist_freq', role: 'DISTRIBUTOR', factor: 'postingFrequency', multi: false, prompt: 'How often do you normally post?', options: opts([['Daily', 1], ['4-6 times a week', 0.8], ['2-3 times a week', 0.6], ['Once a week', 0.4], ['Occasionally', 0.2]]) },
   ],
   CREATOR: [
     { id: 'cre_content', role: 'CREATOR', factor: 'contentBreadth', multi: true, prompt: 'What kind of content do you enjoy creating?', subtitle: 'Select all that apply', options: opts([['Short form videos', 1], ['UGC/Skit', 1], ['Product review', 1], ['Photo', 1], ['Graphic', 1]]) },
     { id: 'cre_equip', role: 'CREATOR', factor: 'equipment', multi: false, prompt: 'What do you create with?', options: opts([['Pro camera', 1], ['Good phone', 0.7], ['Basic phone', 0.4]]) },
     { id: 'cre_camera', role: 'CREATOR', factor: 'cameraComfort', multi: false, prompt: 'Are you comfortable on camera?', options: opts([['Yes', 1], ['Somewhat', 0.6], ['No', 0.2]]) },
-    { id: 'cre_turn', role: 'CREATOR', factor: 'turnaround', multi: false, prompt: 'How fast can you deliver?', options: opts([['Under 24h', 1], ['1–2 days', 0.7], ['3+ days', 0.4]]) },
+    { id: 'cre_turn', role: 'CREATOR', factor: 'turnaround', multi: false, prompt: 'How fast can you deliver?', options: opts([['Under 24h', 1], ['1-2 days', 0.7], ['3+ days', 0.4]]) },
   ],
   PARTICIPATOR: [
     { id: 'par_tasks', role: 'PARTICIPATOR', factor: 'taskBreadth', multi: true, prompt: 'Which of these tasks would you be happy to complete?', subtitle: 'Select all that apply', options: opts([['Install & sign up to an application', 1], ['Leave a Review on playstore/appstore/website', 1], ['Attend an event', 1], ['Drive Engagement', 1], ['Refer', 1]]) },
     { id: 'par_devices', role: 'PARTICIPATOR', factor: 'deviceCoverage', multi: true, prompt: 'Which devices can you use?', subtitle: 'Select all that apply', options: opts([['Phone', 1], ['Second phone', 1], ['Laptop', 1], ['Tablet', 1]]) },
     { id: 'par_multi', role: 'PARTICIPATOR', factor: 'multiStepWillingness', multi: false, prompt: 'Willing to do multi-step tasks?', options: opts([['Yes', 1], ['No', 0.2]]) },
-    { id: 'par_age', role: 'PARTICIPATOR', factor: 'agedAccounts', multi: false, prompt: 'How old are your social accounts?', options: opts([['2+ years', 1], ['1–2 years', 0.7], ['Under a year', 0.4], ['New', 0.2]]) },
+    { id: 'par_age', role: 'PARTICIPATOR', factor: 'agedAccounts', multi: false, prompt: 'How old are your social accounts?', options: opts([['2+ years', 1], ['1-2 years', 0.7], ['Under a year', 0.4], ['New', 0.2]]) },
   ],
 };
 
 // The self-reported factors the backend accepts (scoring.ts). Questions can carry
-// extra factors for UX (e.g. audienceSize) that are captured but not persisted —
+// extra factors for UX (e.g. audienceSize) that are captured but not persisted -
 // audience size is already covered by the channel's verified reach.
 const KNOWN_FACTORS = new Set([
   'postingFrequency', 'contentBreadth', 'equipment', 'cameraComfort', 'turnaround',
   'taskBreadth', 'deviceCoverage', 'multiStepWillingness', 'agedAccounts',
 ]);
 
-type Community = { platform: Platform; participants: string; link: string };
+type Community = { platform: Platform; participants: string; link: string; screenshot?: File | null };
 const DOTS = { backgroundImage: 'radial-gradient(circle, rgba(120,120,130,0.18) 1.2px, transparent 1.2px)', backgroundSize: '24px 24px' } as const;
 
 export default function OnboardingPage() {
@@ -76,7 +77,7 @@ export default function OnboardingPage() {
   const profileQ = useQuery({ queryKey: ['profile'], queryFn: () => api.get<{ full_name: string | null }>('/v1/promoters/me/profile') });
   const firstName = (profileQ.data?.full_name ?? '').trim().split(/\s+/)[0] || '';
 
-  // Step 1 — profile
+  // Step 1 - profile
   const [cats, setCats] = useState<string[]>([]);
   const [langs, setLangs] = useState<string[]>([]);
   const [channelPlatform, setChannelPlatform] = useState<Platform>('WHATSAPP_STATUS');
@@ -85,13 +86,13 @@ export default function OnboardingPage() {
   const [analytics, setAnalytics] = useState<File | null>(null);
   const [maxWeek, setMaxWeek] = useState(3);
   const [communities, setCommunities] = useState<Community[]>([{ platform: 'TELEGRAM', participants: '', link: '' }]);
-  // Step 2 — bank
+  // Step 2 - bank
   const [bankCode, setBankCode] = useState('');
   const [acctNo, setAcctNo] = useState('');
   const [acctName, setAcctName] = useState('');
-  // Step 3 — roles
+  // Step 3 - roles
   const [roles, setRoles] = useState<string[]>([]);
-  // Step 4 — cinematic questions
+  // Step 4 - cinematic questions
   const [qIndex, setQIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
@@ -106,9 +107,15 @@ export default function OnboardingPage() {
   const globalPos = step <= 3 ? step : step === 4 ? 3 + qIndex + 1 : totalSteps;
 
   async function saveProfile() {
+    // WhatsApp status has no public link; every other platform needs one so it can be verified.
+    if (channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(channelUrl)) { setError('Add a link to your main channel (this is how we verify it).'); return; }
+    const halfCommunity = communities.some((c) => (!!c.participants && !c.link) || (!c.participants && !!c.link));
+    if (halfCommunity) { setError('Each community needs both its participant count and a link.'); return; }
     setBusy(true); setError(null);
     try {
       await api.put('/v1/promoters/me/profile', { preferred_categories: cats, languages_spoken: langs, max_campaigns_per_week: maxWeek });
+      // Every channel carries a link (mandatory - the admin verifies insights against
+      // it) and an optional screenshot (the admin verifies reach against it).
       const channel = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: channelPlatform, url: channelUrl || undefined, claimed_audience: Number(followers) });
       if (analytics && channel?.id) {
         const form = new FormData();
@@ -116,9 +123,15 @@ export default function OnboardingPage() {
         await api.postForm(`/v1/promoters/me/channels/${channel.id}/evidence`, form).catch(() => {});
       }
       for (const c of communities) {
-        if (!c.participants) continue;
+        // Skip empty rows; a filled row needs both participants and a link.
+        if (!c.participants || !c.link) continue;
         const members = Number(c.participants);
-        await api.post('/v1/promoters/me/channels', { platform: c.platform, is_group: true, is_group_admin: true, group_members: members, active_participants: members, claimed_audience: members, url: c.link || undefined });
+        const community = await api.post<{ id: string }>('/v1/promoters/me/channels', { platform: c.platform, is_group: true, is_group_admin: true, group_members: members, active_participants: members, claimed_audience: members, url: c.link });
+        if (c.screenshot && community?.id) {
+          const form = new FormData();
+          form.append('file', c.screenshot);
+          await api.postForm(`/v1/promoters/me/channels/${community.id}/evidence`, form).catch(() => {});
+        }
       }
       void qc.invalidateQueries({ queryKey: ['channels'] });
       setStep(2);
@@ -215,11 +228,13 @@ export default function OnboardingPage() {
         {step === 4 && currentQ && (
           <>
             <div className="mt-3 flex items-start gap-3">
-              <button onClick={qBack} className="mt-3 flex shrink-0 items-center gap-2 text-[15px] font-semibold text-muted hover:text-ink">← back</button>
-              <div className="flex flex-1 items-center justify-between gap-4 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur">
-                <p className="text-[15px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
-                <button onClick={() => void dropRole(currentQ.role)} className="shrink-0 rounded-full bg-brand px-5 py-2.5 text-[13.5px] font-semibold text-white shadow-sm transition hover:opacity-90">
-                  Not interested in this role anymore ↪
+              <button onClick={qBack} className="mt-1 flex shrink-0 items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><IconArrowLeft className="h-4 w-4" /> back</button>
+              {/* Stack the copy and the opt-out button on narrow screens - side-by-side, the
+                  long button overflowed off the right edge and made the top unreachable. */}
+              <div className="flex flex-1 flex-col gap-3 rounded-3xl border border-rule bg-paper/70 p-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-[14.5px] font-semibold text-ink">{ROLE_CONTEXT[currentQ.role]}</p>
+                <button onClick={() => void dropRole(currentQ.role)} className="shrink-0 self-start rounded-full bg-brand px-4 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:opacity-90 sm:self-auto">
+                  Not interested in this role anymore
                 </button>
               </div>
             </div>
@@ -260,8 +275,8 @@ export default function OnboardingPage() {
 
               {error && <p className="mt-4 text-[12px] text-brand-700">{error}</p>}
               <div className="mt-8 flex w-full max-w-xl gap-3">
-                <button onClick={() => setShowSkip(true)} className="flex-1 rounded-2xl border border-rule bg-paper py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink/30">Skip this process →</button>
-                <button onClick={qNext} disabled={busy || !(answers[currentQ.id]?.length)} className="flex-1 rounded-2xl bg-brand py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-40">Continue →</button>
+                <button onClick={() => setShowSkip(true)} className="flex-1 rounded-2xl border border-rule bg-paper py-3.5 text-[15px] font-semibold text-ink transition hover:border-ink/30">Skip this process</button>
+                <button onClick={qNext} disabled={busy || !(answers[currentQ.id]?.length)} className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand py-3.5 text-[15px] font-semibold text-white shadow-sm transition hover:opacity-90 disabled:opacity-40">Continue <IconArrowRight className="h-4 w-4" /></button>
               </div>
             </div>
           </>
@@ -271,7 +286,7 @@ export default function OnboardingPage() {
           <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 140, damping: 16 }}
               className="grid h-28 w-28 place-items-center rounded-full bg-warn/10">
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-warn text-[26px] text-white">🕐</span>
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-warn text-white"><IconClock className="h-7 w-7" /></span>
             </motion.div>
             <span className="mt-6 rounded-full bg-warn/10 px-5 py-2 text-[15px] font-bold text-warn">Under review</span>
             <h1 className="mt-4 text-[24px] font-extrabold tracking-tight text-ink">Your profile is in the queue.</h1>
@@ -279,7 +294,7 @@ export default function OnboardingPage() {
             <div className="mt-8 w-full max-w-md overflow-hidden rounded-2xl border border-rule bg-paper">
               {[['Onboarding / Registration', true], ['Bank Details', true], ['Role selection', true], ['Admin review', false]].map(([label, done]) => (
                 <div key={label as string} className="flex items-center gap-3 border-b border-rule px-4 py-3.5 last:border-0">
-                  <span className={`grid h-6 w-6 place-items-center rounded-full text-[13px] text-white ${done ? 'bg-ok' : 'bg-warn'}`}>{done ? '✓' : '🕐'}</span>
+                  <span className={`grid h-6 w-6 place-items-center rounded-full text-white ${done ? 'bg-ok' : 'bg-warn'}`}>{done ? <IconCheck className="h-3.5 w-3.5" /> : <IconClock className="h-3.5 w-3.5" />}</span>
                   <span className="text-[14.5px] font-medium text-ink">{label as string}</span>
                 </div>
               ))}
@@ -318,7 +333,7 @@ function ProgressHeader({ pos, total, onBack }: { pos: number; total: number; on
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between text-[13px] font-semibold">
-        {onBack ? <button onClick={onBack} className="text-muted hover:text-ink">← Back</button> : <span className="text-ink">Complete your profile</span>}
+        {onBack ? <button onClick={onBack} className="inline-flex items-center gap-1.5 text-muted hover:text-ink"><IconArrowLeft className="h-4 w-4" /> Back</button> : <span className="text-ink">Complete your profile</span>}
         <span className="text-muted tabular-nums">{pos}/{total}</span>
       </div>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-rule">
@@ -350,7 +365,7 @@ function StepProfile(p: any) {
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">A few questions</h1>
-      <p className="mt-1 text-[13.5px] text-muted">Welcome to Ralia — this helps us position you and match the right campaigns.</p>
+      <p className="mt-1 text-[13.5px] text-muted">Welcome to Ralia - this helps us position you and match the right campaigns.</p>
       <div className="mt-6 space-y-5">
         <div><div className="mb-2 text-[13.5px] font-semibold text-ink">Categories / Niche you&apos;d promote</div><Chips options={CATEGORIES} selected={p.cats} onToggle={(v: string) => p.toggle(v, p.cats, p.setCats)} /></div>
         <div><div className="mb-2 text-[13.5px] font-semibold text-ink">How many languages do you speak</div><Chips options={LANGUAGES} selected={p.langs} onToggle={(v: string) => p.toggle(v, p.langs, p.setLangs)} /></div>
@@ -359,16 +374,16 @@ function StepProfile(p: any) {
           <div className="flex flex-wrap gap-2.5">
             {HIGH_PLATFORMS.map((pl) => {
               const on = p.channelPlatform === pl.value;
-              return <button key={pl.value} type="button" onClick={() => p.setChannelPlatform(pl.value)} className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition ${on ? 'bg-ink text-white' : 'border border-rule bg-paper text-ink hover:border-ink/30'}`}>{pl.label}</button>;
+              return <button key={pl.value} type="button" onClick={() => p.setChannelPlatform(pl.value)} className={`rounded-full px-4 py-2 text-[13.5px] font-semibold transition ${on ? 'bg-ink text-paper' : 'border border-rule bg-paper text-ink hover:border-ink/30'}`}>{pl.label}</button>;
             })}
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder="Link to profile e.g https://…" />
+            <input className="input" value={p.channelUrl} onChange={(e) => p.setChannelUrl(e.target.value)} placeholder={p.channelPlatform === 'WHATSAPP_STATUS' ? 'Link (optional for WhatsApp)' : 'Link to profile (required) e.g https://…'} />
             <input className="input" type="number" inputMode="numeric" value={p.followers} onChange={(e) => p.setFollowers(e.target.value)} placeholder="Number of followers" />
           </div>
           <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-rule bg-wash py-6 text-center transition hover:border-brand/40">
             <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => p.setAnalytics(e.target.files?.[0] ?? null)} />
-            <span className="text-[13px] font-semibold text-ink">{p.analytics ? p.analytics.name : '↑ Upload your analytics'}</span>
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink">{p.analytics ? p.analytics.name : <><IconUpload className="h-4 w-4" /> Upload your analytics</>}</span>
             <span className="text-[12px] text-muted">JPG, PNG up to 5MB</span>
           </label>
         </div>
@@ -379,12 +394,28 @@ function StepProfile(p: any) {
           <div className="mb-2 text-[13.5px] font-semibold text-ink">Online communities you manage <span className="font-normal text-muted">(optional)</span></div>
           <div className="space-y-3">
             {p.communities.map((c: Community, i: number) => (
-              <div key={i} className="grid gap-2 sm:grid-cols-3">
-                <select className="input appearance-none" value={c.platform} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, platform: e.target.value as Platform } : x))}>
-                  {COMMUNITY_PLATFORMS.map((pl) => <option key={pl.value} value={pl.value}>{pl.label}</option>)}
-                </select>
-                <input className="input" type="number" inputMode="numeric" value={c.participants} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, participants: e.target.value } : x))} placeholder="No. of participants" />
-                <input className="input" value={c.link} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, link: e.target.value } : x))} placeholder="Link (optional)" />
+              <div key={i} className="space-y-2 rounded-2xl border border-rule p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] font-semibold text-muted">Community {i + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => p.setCommunities((arr: Community[]) => arr.filter((_, j) => j !== i))}
+                    className="text-[12px] font-semibold text-brand-700 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <select className="input appearance-none" value={c.platform} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, platform: e.target.value as Platform } : x))}>
+                    {COMMUNITY_PLATFORMS.map((pl) => <option key={pl.value} value={pl.value}>{pl.label}</option>)}
+                  </select>
+                  <input className="input" type="number" inputMode="numeric" value={c.participants} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, participants: e.target.value } : x))} placeholder="No. of participants" />
+                  <input className="input" value={c.link} onChange={(e) => p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, link: e.target.value } : x))} placeholder="Link (required)" />
+                </div>
+                <label className="flex cursor-pointer items-center gap-2 text-[12.5px]">
+                  <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0] ?? null; p.setCommunities((arr: Community[]) => arr.map((x, j) => j === i ? { ...x, screenshot: f } : x)); }} />
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-rule px-3 py-1.5 font-semibold text-ink transition hover:border-brand/40">{c.screenshot ? c.screenshot.name : <><IconUpload className="h-3.5 w-3.5" /> Screenshot (optional)</>}</span>
+                </label>
               </div>
             ))}
           </div>
@@ -392,29 +423,61 @@ function StepProfile(p: any) {
         </div>
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.cats.length === 0 || p.langs.length === 0 || !p.followers || (p.channelPlatform !== 'WHATSAPP_STATUS' && !/^https?:\/\//.test(p.channelUrl))} onClick={p.onNext}>Next <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }
 
 function StepBank(p: any) {
+  const banks = useQuery({ queryKey: ['banks'], queryFn: () => api.get<{ name: string; code: string }[]>('/v1/promoters/me/banks') });
+  const [resolving, setResolving] = useState(false);
+  const [resolveErr, setResolveErr] = useState<string | null>(null);
+  const [bypassed, setBypassed] = useState(false);
+
+  // Auto-resolve the account name once a bank + 10-digit number are entered.
+  useEffect(() => {
+    const code = p.bankCode;
+    const num = p.acctNo;
+    if (!code || num.length !== 10) { p.setAcctName(''); setResolveErr(null); setBypassed(false); return; }
+    let cancelled = false;
+    setResolving(true); setResolveErr(null);
+    api
+      .get<{ account_name: string; bypassed: boolean }>(`/v1/promoters/me/bank/resolve?bank_code=${encodeURIComponent(code)}&account_number=${encodeURIComponent(num)}`)
+      .then((r) => { if (cancelled) return; p.setAcctName(r.account_name); setBypassed(!!r.bypassed); })
+      .catch((e) => { if (cancelled) return; p.setAcctName(''); setResolveErr(e instanceof ApiError ? e.message : 'Could not verify that account.'); })
+      .finally(() => { if (!cancelled) setResolving(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.bankCode, p.acctNo]);
+
   return (
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">Where you get paid</h1>
       <p className="mt-1 text-[13.5px] text-muted">Your earnings are sent here after review.</p>
       <div className="mt-6 space-y-4">
-        <Field label="Bank code" hint="3–6 digits (e.g. 058 for GTBank)."><input className="input" inputMode="numeric" value={p.bankCode} onChange={(e) => p.setBankCode(e.target.value.replace(/\D/g, ''))} placeholder="058" /></Field>
+        <Field label="Bank">
+          <select className="input appearance-none pr-10" value={p.bankCode} onChange={(e) => p.setBankCode(e.target.value)}>
+            <option value="">{banks.isLoading ? 'Loading banks…' : 'Select your bank'}</option>
+            {(banks.data ?? []).map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+          </select>
+        </Field>
         <Field label="Account number" hint="10-digit NUBAN."><input className="input" inputMode="numeric" maxLength={10} value={p.acctNo} onChange={(e) => p.setAcctNo(e.target.value.replace(/\D/g, ''))} placeholder="0123456789" /></Field>
-        <Field label="Account name"><input className="input" value={p.acctName} onChange={(e) => p.setAcctName(e.target.value)} placeholder="As it appears on your bank account" /></Field>
-        {p.acctName.trim() && (
+        {resolving && <p className="text-[13px] text-muted">Checking account…</p>}
+        {p.acctName && !resolving && (
           <div className="flex items-start gap-2 rounded-xl border border-ok/30 bg-ok/5 px-4 py-3 text-[13px]">
-            <span className="text-ok">✓</span><span><span className="font-semibold text-ok">Account name confirmed.</span> <span className="text-muted">If this isn&apos;t you, change the account number.</span></span>
+            <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-ok" />
+            <span>
+              <span className="font-semibold text-ink">{p.acctName}</span>
+              {bypassed && <span className="ml-1.5 rounded bg-warn/15 px-1.5 py-0.5 text-[11px] font-semibold text-warn">dev</span>}
+              <br /><span className="text-muted">If this isn&apos;t you, check the account number and bank.</span>
+            </span>
           </div>
         )}
+        {resolveErr && !resolving && <p className="rounded-xl border border-brand/20 bg-brand/5 px-4 py-3 text-[13px] text-brand-700">{resolveErr}</p>}
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!/^\d{3,6}$/.test(p.bankCode) || p.acctNo.length !== 10 || !p.acctName.trim()} onClick={p.onNext}>Next →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={!p.bankCode || p.acctNo.length !== 10 || !p.acctName.trim() || resolving} onClick={p.onNext}>Next <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }
@@ -424,7 +487,7 @@ function StepRoles(p: any) {
     <div>
       <Hello name={p.firstName} />
       <h1 className="mt-1 text-[24px] font-extrabold tracking-tight text-ink">How would you like to use Ralia</h1>
-      <p className="mt-1 text-[13.5px] text-muted">Pick what fits you — you can choose more than one. We&apos;ll ask a couple of quick questions for each.</p>
+      <p className="mt-1 text-[13.5px] text-muted">Pick what fits you - you can choose more than one. We&apos;ll ask a couple of quick questions for each.</p>
       <div className="mt-6 space-y-3">
         {ROLES.map((r) => {
           const on = p.roles.includes(r.value);
@@ -432,13 +495,13 @@ function StepRoles(p: any) {
             <button key={r.value} type="button" onClick={() => p.toggle(r.value, p.roles, p.setRoles)}
               className={`flex w-full items-start justify-between gap-3 rounded-2xl border p-4 text-left transition ${on ? 'border-brand bg-brand/[0.04]' : 'border-rule hover:border-ink/30'}`}>
               <span><span className="block text-[15px] font-bold text-ink">{r.label}</span><span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{r.blurb}</span></span>
-              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? 'border-brand bg-brand text-[12px] text-white' : 'border-rule'}`}>{on ? '✓' : ''}</span>
+              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border ${on ? 'border-brand bg-brand text-white' : 'border-rule'}`}>{on && <IconCheck className="h-3 w-3" />}</span>
             </button>
           );
         })}
       </div>
       {p.error && <p className="mt-3 text-[12px] text-brand-700">{p.error}</p>}
-      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.roles.length === 0} onClick={p.onNext}>Continue →</Button>
+      <Button size="lg" className="mt-6 w-full" loading={p.busy} disabled={p.roles.length === 0} onClick={p.onNext}>Continue <IconArrowRight className="h-4 w-4" /></Button>
     </div>
   );
 }

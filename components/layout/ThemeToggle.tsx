@@ -3,7 +3,7 @@
 import { IconMoon, IconSun } from '@/components/brand/icons';
 import { useTheme } from '@/lib/theme';
 
-/** Segmented light/dark switch — the active side filled brand-red. */
+/** Segmented light/dark switch - the active side filled brand-red. */
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const light = theme !== 'dark';

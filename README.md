@@ -1,8 +1,8 @@
 <div align="center">
 
-# 📣 Ralia for Promoters
+# ð£ Ralia for Promoters
 
-### Turn your audience into income — accept offers, post, submit proof, get paid.
+### Turn your audience into income â accept offers, post, submit proof, get paid.
 
 <br/>
 
@@ -22,47 +22,47 @@ The **promoter** app is where creators and distributors earn. Sign up, get match
 that fit your audience, accept an offer, post the creative, and submit a screenshot as proof.
 Pay lands in your balance after an admin verifies it.
 
-## 🧭 The promoter journey
+## ð§­ The promoter journey
 
 ```mermaid
 flowchart LR
-    S["📧 Sign up<br/>email OTP"] --> O["🧩 Onboard<br/>channels + profile"]
-    O --> M{{"🎯 Matched to<br/>eligible campaigns"}}
-    M --> A["✅ Accept offer"]
-    A --> T["🗓️ Post on each<br/>scheduled day"]
-    T --> U["📸 Submit proof<br/>per day"]
-    U --> V{"🛡️ Admin verifies"}
-    V -->|approved| Pay["💰 Paid pro-rata"]
-    V -->|rejected| A2["↩️ Resubmit"]
+    S["ð§ Sign up<br/>email OTP"] --> O["ð§© Onboard<br/>channels + profile"]
+    O --> M{{"ð¯ Matched to<br/>eligible campaigns"}}
+    M --> A["â Accept offer"]
+    A --> T["ðï¸ Post on each<br/>scheduled day"]
+    T --> U["ð¸ Submit proof<br/>per day"]
+    U --> V{"ð¡ï¸ Admin verifies"}
+    V -->|approved| Pay["ð° Paid pro-rata"]
+    V -->|rejected| A2["â©ï¸ Resubmit"]
 
     classDef pay fill:#dcfce7,stroke:#16a34a,color:#14532d;
     class Pay pay;
 ```
 
-## 🗓️ Multi-day delivery timeline
+## ðï¸ Multi-day delivery timeline
 
-A campaign can ask for several posts over a run window. Your assignment breaks into a **Day 1…N**
-timeline — each day has its own deadline, its own status, and its own submit button. You're paid
+A campaign can ask for several posts over a run window. Your assignment breaks into a **Day 1â¦N**
+timeline â each day has its own deadline, its own status, and its own submit button. You're paid
 **per approved day**.
 
 ```mermaid
 flowchart LR
-    D1["Day 1<br/>✅ approved"]:::ok --> D2["Day 2<br/>✅ approved"]:::ok --> D3["Day 3<br/>⏳ due today"]:::now --> D4["Day 4<br/>◻️ upcoming"]:::soon
+    D1["Day 1<br/>â approved"]:::ok --> D2["Day 2<br/>â approved"]:::ok --> D3["Day 3<br/>â³ due today"]:::now --> D4["Day 4<br/>â»ï¸ upcoming"]:::soon
     classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d;
     classDef now fill:#fef9c3,stroke:#ca8a04,color:#713f12;
     classDef soon fill:#f1f5f9,stroke:#94a3b8,color:#334155;
 ```
 
-> Deadlines you see are an **internal** buffer — always earlier than the client's real end date, so
+> Deadlines you see are an **internal** buffer â always earlier than the client's real end date, so
 > there's room to recover a missed day. Miss two days in a row and the remaining posts are
 > reassigned to keep the campaign on track.
 
-## 🔒 Sign-up & verification
+## ð Sign-up & verification
 
-Verification is by **email OTP** — register, and a 6-digit code lands in your inbox. Your tracking
+Verification is by **email OTP** â register, and a 6-digit code lands in your inbox. Your tracking
 link (the one you share) routes through the API so your clicks count toward your pay.
 
-## 🚀 Quickstart
+## ð Quickstart
 
 ```bash
 npm install
@@ -70,10 +70,10 @@ cp .env.example .env     # set API_ORIGIN (defaults to http://localhost:6100)
 npm run dev              # http://localhost:6400
 ```
 
-Seeded logins: `promoter1@ralia.test` … `promoter40@ralia.test` · password `Password123!`
+Seeded logins: `promoter1@ralia.test` â¦ `promoter40@ralia.test` Â· password `Password123!`
 
 <details>
-<summary><b>🔐 Environment</b></summary>
+<summary><b>ð Environment</b></summary>
 
 | Variable | Purpose |
 |---|---|
@@ -82,22 +82,22 @@ Seeded logins: `promoter1@ralia.test` … `promoter40@ralia.test` · password `P
 </details>
 
 <details>
-<summary><b>🛠️ Scripts</b></summary>
+<summary><b>ð ï¸ Scripts</b></summary>
 
 | Script | Does |
 |---|---|
 | `dev` | dev server on :6400 |
 | `build` | production build |
-| `start:prod` | `node server.js` (Hostinger hPanel) |
+| `start:prod` | `node server.js` (only for a self-hosted Node host; Vercel builds natively) |
 | `typecheck` | `tsc --noEmit` |
 </details>
 
-## 🚢 Deployment
+## ð¢ Deployment
 
-Deploys to **Hostinger hPanel** (Node.js app) via the bundled `server.js`. See `DEPLOY.md`.
+Deploys to **Vercel** (native Next.js) — import the repo, set `API_ORIGIN` + `NEXT_PUBLIC_APP_ENV`, and Vercel builds each push. See `DEPLOY.md`.
 
 ---
 
 <div align="center">
-<sub>Part of Ralia · <a href="../ralia-api">API</a> · <a href="../ralia-client">Client</a> · <a href="../ralia-admin">Admin</a></sub>
+<sub>Part of Ralia Â· <a href="../ralia-api">API</a> Â· <a href="../ralia-client">Client</a> Â· <a href="../ralia-admin">Admin</a></sub>
 </div>

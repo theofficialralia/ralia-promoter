@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
 import { Spinner } from '@/components/ui/Spinner';
 import { StatusPill } from '@/components/ui/StatusPill';
-import { IconArrowLeft, IconCopy } from '@/components/brand/icons';
+import { IconArrowLeft, IconArrowRight, IconCheck, IconClose, IconCopy, IconDownload, IconUpload } from '@/components/brand/icons';
 import { api, ApiError, type AssignmentDetail, type DeliverySlot } from '@/lib/api';
 import { compactNumber, titleCase } from '@/lib/format';
 
@@ -19,8 +19,8 @@ function fmtSize(bytes: number): string {
 /**
  * The promoter's internal deadline (due_at), formatted. `short` drives the deadline
  * chip; `full` is the human date. `urgent` flags <24h-left / overdue for styling.
- * This is deliberately the internal deadline — always earlier than the client's
- * run-window end — so the promoter aims for the buffered date, not the client's.
+ * This is deliberately the internal deadline - always earlier than the client's
+ * run-window end - so the promoter aims for the buffered date, not the client's.
  */
 function fmtDeadline(iso: string | null): { full: string; short: string; urgent: boolean } | null {
   if (!iso) return null;
@@ -33,11 +33,11 @@ function fmtDeadline(iso: string | null): { full: string; short: string; urgent:
   return { full, short, urgent: ms <= 0 || hours < 24 };
 }
 
-/** The client-facing run window, e.g. "5 Sep – 19 Sep", or null when no window set. */
+/** The client-facing run window, e.g. "5 Sep - 19 Sep", or null when no window set. */
 function fmtRunWindow(startsAt: string | null, endsAt: string | null): string | null {
   if (!endsAt) return null;
   const fmt = (iso: string) => new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
-  return startsAt ? `${fmt(startsAt)} – ${fmt(endsAt)}` : `runs to ${fmt(endsAt)}`;
+  return startsAt ? `${fmt(startsAt)} - ${fmt(endsAt)}` : `runs to ${fmt(endsAt)}`;
 }
 
 export default function AssignmentDetailPage() {
@@ -81,10 +81,12 @@ export default function AssignmentDetailPage() {
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px]">
         {/* Steps */}
         <div className="space-y-3">
-          <Step n={1} title="Download the poster" sub={a.poster ? `${a.poster.mime_type.split('/')[1]?.toUpperCase() ?? 'Image'} · ${fmtSize(a.poster.size_bytes)}` : 'The business asked Ralia to design this — check back shortly.'}>
+          <Step n={1} title="Download the poster" sub={a.poster ? `${a.poster.mime_type.split('/')[1]?.toUpperCase() ?? 'Image'} · ${fmtSize(a.poster.size_bytes)}` : 'The business asked Ralia to design this - check back shortly.'}>
             {a.poster && (
-              <a href={a.poster.url} download target="_blank" rel="noreferrer">
-                <Button variant="secondary">↓ Download</Button>
+              // ?download=1 forces a real download (Content-Disposition / Cloudinary
+              // fl_attachment) instead of opening the image inline in a new tab.
+              <a href={`${a.poster.url}${a.poster.url.includes('?') ? '&' : '?'}download=1`} download>
+                <Button variant="secondary"><IconDownload className="h-4 w-4" /> Download</Button>
               </a>
             )}
           </Step>
@@ -107,9 +109,9 @@ export default function AssignmentDetailPage() {
             n={(a.caption ? 3 : 2) + (a.tracking_url ? 1 : 0)}
             title={multiDay ? `Post on each scheduled day (${a.posts_approved}/${a.posts_required} approved)` : runWindow ? 'Keep it live through the run window' : 'Keep it live, then grab your proof'}
             sub={multiDay
-              ? "Submit a screenshot for each scheduled day below — you're paid per approved post."
+              ? "Submit a screenshot for each scheduled day below - you're paid per approved post."
               : deadline
-                ? `Submit your proof by ${deadline.full} — screenshot the view count and add it below.`
+                ? `Submit your proof by ${deadline.full} - screenshot the view count and add it below.`
                 : 'Screenshot the view count and submit it below.'}
           />
         </div>
@@ -121,8 +123,8 @@ export default function AssignmentDetailPage() {
               <span>You Earn</span>
               {deadline && <span className={deadline.urgent ? 'font-semibold text-[#ff9d9d]' : ''}>{deadline.short}</span>}
             </div>
-            <div className="mt-1 text-[26px] font-extrabold leading-none">{a.fee_min.amount_display} – {a.fee.amount_display}</div>
-            <div className="mt-2 text-[12px] text-white/55">Paid to your balance after review — pro-rata on your verified views.</div>
+            <div className="mt-1 text-[26px] font-extrabold leading-none">{a.fee_min.amount_display} - {a.fee.amount_display}</div>
+            <div className="mt-2 text-[12px] text-white/55">Paid to your balance after review - pro-rata on your verified views.</div>
             {deadline && (
               <div className="mt-3 border-t border-white/10 pt-2.5 text-[12px] text-white/60">
                 Deadline <span className="font-semibold text-white/85">{deadline.full}</span>
@@ -156,6 +158,7 @@ export default function AssignmentDetailPage() {
           slots={a.slots}
           assignmentId={a.id}
           channelName={channelName}
+          target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach}
           onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })}
         />
       ) : (
@@ -172,9 +175,9 @@ export default function AssignmentDetailPage() {
           {a.submission && <SubmissionPreview submission={a.submission} rejected={rejected} done={done} underReview={underReview} />}
 
           {/* Submit proof */}
-          {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
+          {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
           {underReview && !a.submission && <ReviewState />}
-          {done && <div className="mt-5 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok">Approved and paid to your balance. 🎉</div>}
+          {done && <div className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok"><IconCheck className="h-[18px] w-[18px] shrink-0" /> Approved and paid to your balance.</div>}
         </>
       )}
     </div>
@@ -228,7 +231,7 @@ function SubmissionPreview({ submission: s, rejected, done, underReview }: { sub
         </div>
         <div className="flex items-center justify-between p-4">
           <div>
-            <div className="text-[18px] font-extrabold text-ink">{views != null ? compactNumber(views) : '—'}</div>
+            <div className="text-[18px] font-extrabold text-ink">{views != null ? compactNumber(views) : '-'}</div>
             <div className="text-[11.5px] text-muted">views</div>
           </div>
           <StatusPill status={verdict} />
@@ -238,7 +241,7 @@ function SubmissionPreview({ submission: s, rejected, done, underReview }: { sub
   );
 }
 
-function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayLabel, onDone }: { assignmentId: string; channelName: string | null; deadline: string | null; deliverySlotId?: string; dayLabel?: string; onDone: () => void }) {
+function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayLabel, target, onDone }: { assignmentId: string; channelName: string | null; deadline: string | null; deliverySlotId?: string; dayLabel?: string; target?: number; onDone: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [views, setViews] = useState('');
   const [url, setUrl] = useState('');
@@ -250,11 +253,15 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
 
   async function submit() {
     if (!file) return setError('Add a screenshot of your post’s view count.');
+    const viewCount = Number(views);
+    if (!views.trim() || !Number.isFinite(viewCount) || viewCount < 1) {
+      return setError('Enter your total view count - it decides your pay and whether the job needs more posts.');
+    }
     setBusy(true); setError(null);
     try {
       const form = new FormData();
       form.append('file', file);
-      if (views) form.append('claimed_views', views);
+      form.append('claimed_views', String(Math.round(viewCount)));
       if (url) form.append('public_url', url);
       // §multi-day: proof answers a specific scheduled post.
       if (deliverySlotId) form.append('delivery_slot_id', deliverySlotId);
@@ -288,23 +295,33 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
             onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) { setFile(f); setError(null); } }}
             className={`flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${dragging ? 'border-brand bg-brand/10' : 'border-brand/40 bg-brand/5'}`}
           >
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-brand text-[22px] text-white">⬆</span>
+            <span className="grid h-14 w-14 place-items-center rounded-full bg-brand text-white"><IconUpload className="h-6 w-6" /></span>
             <span className="mt-3 text-[16px] font-bold text-ink">{file ? file.name : 'Drop your evidence, or click to browse'}</span>
             <span className="mt-1 text-[12.5px] text-muted">PNG or JPG, under 5 MB. Must show your status view count.</span>
             <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setError(null); }} />
           </button>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Field label="Your total view count">
-              <input type="number" inputMode="numeric" className="input" value={views} onChange={(e) => setViews(e.target.value)} placeholder="e.g. 840" />
+            <Field label="Your total view count (required)">
+              <input type="number" inputMode="numeric" min={1} required className="input" value={views} onChange={(e) => setViews(e.target.value)} placeholder="e.g. 840" />
             </Field>
             <Field label="Public URL (optional for WhatsApp)">
               <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://yourlink" />
             </Field>
           </div>
 
+          {target ? (
+            Number(views) > target ? (
+              <div className="mt-3 rounded-xl border border-ok/30 bg-ok-wash px-4 py-3 text-[12.5px] text-ink">
+                <b className="font-bold text-ok">Above your {compactNumber(target)} target.</b> Over-delivering earns bonus leaderboard points once an admin verifies your count.
+              </div>
+            ) : (
+              <p className="mt-3 text-[12px] text-muted">Your target is <b className="font-semibold text-ink">{compactNumber(target)}</b> views. Delivering on time and getting verified earns leaderboard points — beat your target for a bonus.</p>
+            )
+          ) : null}
+
           {error && <p className="mt-2 text-[12px] text-brand-700">{error}</p>}
-          <Button size="lg" className="mt-4 w-full sm:w-auto" loading={busy} onClick={submit}>Submit Proof →</Button>
+          <Button size="lg" className="mt-4 w-full sm:w-auto" loading={busy} onClick={submit}>Submit Proof <IconArrowRight className="h-4 w-4" /></Button>
         </div>
 
         <div className="card h-max p-4">
@@ -314,13 +331,13 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
               <div className="text-[11px] text-muted">Your post</div>
               <div className="mt-1 text-[20px] font-extrabold text-ink">842</div>
               <div className="text-[11px] text-muted">Views</div>
-              <div className="mt-2 text-[11.5px] font-semibold text-ok">✓ View count visible</div>
+              <div className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-ok"><IconCheck className="h-3.5 w-3.5" /> View count visible</div>
             </div>
             <div className="rounded-xl border border-brand/40 p-3 text-center">
               <div className="text-[11px] text-muted">Your post</div>
               <div className="mt-1 text-[20px] font-extrabold text-ink">?</div>
               <div className="text-[11px] text-muted">Views</div>
-              <div className="mt-2 text-[11.5px] font-semibold text-brand-700">✕ View count cropped</div>
+              <div className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-brand-700"><IconClose className="h-3.5 w-3.5" /> View count cropped</div>
             </div>
           </div>
         </div>
@@ -332,7 +349,7 @@ function SubmitProof({ assignmentId, channelName, deadline, deliverySlotId, dayL
 function ReviewState() {
   return (
     <div className="mt-5 rounded-2xl border border-warn/30 bg-warn-wash p-4">
-      <div className="text-[14px] font-bold text-warn">Evidence received — under review</div>
+      <div className="text-[14px] font-bold text-warn">Evidence received - under review</div>
       <div className="text-[13px] text-body">We approve most proofs the same day. You’ll be paid to your balance once it clears.</div>
     </div>
   );
@@ -345,7 +362,7 @@ const SLOT_PILL: Record<DeliverySlot['status'], { label: string; cls: string }> 
   PENDING: { label: 'To do', cls: 'bg-wash text-muted' },
   SUBMITTED: { label: 'In review', cls: 'bg-warn-wash text-warn' },
   APPROVED: { label: 'Approved', cls: 'bg-ok-wash text-ok' },
-  REJECTED: { label: 'Rejected — redo', cls: 'bg-brand/10 text-brand-700' },
+  REJECTED: { label: 'Rejected - redo', cls: 'bg-brand/10 text-brand-700' },
   MISSED: { label: 'Missed', cls: 'bg-ink/10 text-muted' },
 };
 
@@ -353,7 +370,7 @@ function fmtSlotDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-function DeliveryTimeline({ slots, assignmentId, channelName, onDone }: { slots: DeliverySlot[]; assignmentId: string; channelName: string | null; onDone: () => void }) {
+function DeliveryTimeline({ slots, assignmentId, channelName, target, onDone }: { slots: DeliverySlot[]; assignmentId: string; channelName: string | null; target?: number; onDone: () => void }) {
   // Guide the promoter to the earliest post still needing proof.
   const activeId = slots.find((s) => s.submittable)?.id ?? null;
   const [openId, setOpenId] = useState<string | null>(activeId);
@@ -405,6 +422,7 @@ function DeliveryTimeline({ slots, assignmentId, channelName, onDone }: { slots:
                     deadline={fmtSlotDate(slot.due_at)}
                     deliverySlotId={slot.id}
                     dayLabel={`Day ${slot.index}`}
+                    target={target}
                     onDone={onDone}
                   />
                 </div>

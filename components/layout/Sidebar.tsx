@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Logo, LogoMark } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Avatar';
-import { IconCampaigns, IconCollapse, IconFinance, IconLogout, IconOffers, IconSupport } from '@/components/brand/icons';
+import { IconCampaigns, IconCollapse, IconFinance, IconLogout, IconOffers, IconPerformance, IconSupport } from '@/components/brand/icons';
 import { useAuth } from '@/lib/auth';
 import { nameFromEmail } from '@/lib/format';
 import { SUPPORT } from '@/lib/support';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/offers', label: 'Offers', Icon: IconOffers },
   { href: '/campaigns', label: 'Campaigns', Icon: IconCampaigns },
   { href: '/earnings', label: 'Earnings', Icon: IconFinance },
+  { href: '/leaderboard', label: 'Leaderboard', Icon: IconPerformance },
 ];
 
 export function Sidebar({ collapsed = false, onToggleCollapse }: { collapsed?: boolean; onToggleCollapse?: () => void }) {
