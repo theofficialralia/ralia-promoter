@@ -6,13 +6,14 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopBar } from '@/components/layout/TopBar';
 import { Spinner } from '@/components/ui/Spinner';
-import { IconCampaigns, IconFinance, IconOffers, IconPromoters } from '@/components/brand/icons';
+import { IconCampaigns, IconFinance, IconOffers, IconPerformance, IconPromoters } from '@/components/brand/icons';
 import { useRequireAuth } from '@/lib/auth';
 
 const TABS = [
   { href: '/offers', label: 'Offers', Icon: IconOffers },
   { href: '/campaigns', label: 'Campaigns', Icon: IconCampaigns },
   { href: '/earnings', label: 'Earnings', Icon: IconFinance },
+  { href: '/leaderboard', label: 'Rank', Icon: IconPerformance },
   { href: '/profile', label: 'Profile', Icon: IconPromoters },
 ];
 

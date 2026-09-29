@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Urbanist } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/lib/providers';
+import { EnvBadge } from '@/components/EnvBadge';
 
 const urbanist = Urbanist({
   subsets: ['latin'],
@@ -11,8 +12,8 @@ const urbanist = Urbanist({
 });
 
 export const metadata: Metadata = {
-  title: 'Ralia — Promoters',
-  description: 'Get paid to promote campaigns you already fit — accept offers, post, submit proof, cash out.',
+  title: 'Ralia - Promoters',
+  description: 'Get paid to promote campaigns you already fit - accept offers, post, submit proof, cash out.',
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, maximumScale: 1 };
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head><script dangerouslySetInnerHTML={{ __html: noFlash }} /></head>
       <body>
         <Providers>{children}</Providers>
+        <EnvBadge />
       </body>
     </html>
   );

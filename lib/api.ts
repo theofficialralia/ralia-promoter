@@ -79,6 +79,9 @@ export type Profile = {
   languages_spoken: string[];
   preferred_categories: string[];
   max_campaigns_per_week: number;
+  roles?: string[];
+  /** What's still missing before the profile can be reviewed (e.g. ['channels','bank']). */
+  missing?: string[];
 };
 
 export type Channel = {
@@ -100,9 +103,34 @@ export type Offer = {
   campaign_name: string;
   role: string;
   fee_minor: number;
+  promised_reach: number;
   expires_at: string;
   status: string;
   fit_pct: number | null;
+};
+
+/** The fuller picture a promoter reviews before accepting or declining. */
+export type OfferDetail = {
+  id: string;
+  campaign_id: string;
+  campaign_name: string;
+  objective: string;
+  role: string;
+  description: string | null;
+  instructions: string | null;
+  task: string;
+  fee: Money;
+  fee_min: Money;
+  promised_reach: number;
+  posts_required: number;
+  cadence: string;
+  starts_at: string | null;
+  ends_at: string | null;
+  expires_at: string;
+  fit_pct: number | null;
+  channel: { platform: string; handle: string | null; effective_reach: number } | null;
+  poster: { url: string; mime_type: string; size_bytes: number } | null;
+  caption: string | null;
 };
 
 export type Notification = {
@@ -169,7 +197,7 @@ export type AssignmentDetail = {
   promised_reach: number;
   /** The promoter's internal deadline (a contingency buffer before the client's run-window end). */
   due_at: string | null;
-  /** Client-facing run window — context only; the promoter is held to due_at. */
+  /** Client-facing run window - context only; the promoter is held to due_at. */
   campaign_starts_at: string | null;
   campaign_ends_at: string | null;
   /** §multi-day: scheduled-post progress. posts_required === 1 → a one-off. */
@@ -180,7 +208,7 @@ export type AssignmentDetail = {
   instructions: string | null;
   task: string;
   destination_url: string | null;
-  /** The link the promoter shares — routes through /r/:token so clicks are recorded. */
+  /** The link the promoter shares - routes through /r/:token so clicks are recorded. */
   tracking_url: string | null;
   channel: { platform: Platform | string; handle: string | null; effective_reach: number } | null;
   poster: { url: string; mime_type: string; size_bytes: number } | null;
@@ -197,4 +225,32 @@ export type AssignmentDetail = {
 };
 
 export type Wallet = { available: Money; pending_withdrawal: Money; withdrawal_minimum: Money; can_withdraw: boolean };
+
+// ── Leaderboard & tiers ──────────────────────────────────────
+export type PromoterTier = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+export type LeaderboardRow = { rank: number; display_name: string; points: number; tier: PromoterTier; is_me: boolean };
+export type Leaderboard = { season: string; season_ends_at: string | null; total: number; top: LeaderboardRow[]; me: LeaderboardRow | null };
+export type PointBreakdown = { type: string; points: number };
+export type NextTier = { tier: PromoterTier; points_to_go: number };
+export type PointRules = {
+  delivery_completed: number;
+  on_time: number;
+  quality_clean: number;
+  over_delivery_max: number;
+  over_cap_ratio: number;
+  penalty_no_show: number;
+  penalty_rejected: number;
+  penalty_duplicate: number;
+};
+export type MyScore = {
+  season: string;
+  season_points: number;
+  lifetime_points: number;
+  rolling_90_points: number;
+  rank: number | null;
+  tier: PromoterTier;
+  next_tier: NextTier | null;
+  streak: number;
+  breakdown: PointBreakdown[];
+};
 export type Withdrawal = { id: string; amount: Money; status: string; paid_ref: string | null; created_at: string };
