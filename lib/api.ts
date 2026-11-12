@@ -185,13 +185,26 @@ export type DeliverySlot = {
   } | null;
 };
 
+export type UgcContentItem = {
+  id: string;
+  status: 'PENDING_CLIENT_REVIEW' | 'CLIENT_APPROVED' | 'CLIENT_REJECTED';
+  public_url: string | null;
+  note: string | null;
+  file_url: string | null;
+  reject_reason: string | null;
+  created_at: string;
+};
+
 export type AssignmentDetail = {
   id: string;
   campaign_id: string;
   campaign_name: string;
   objective: string;
+  service_type: 'PROMOTE_EXISTING' | 'UGC' | 'ENTERPRISE';
   role: string;
   status: string;
+  ugc_content: UgcContentItem[];
+  ugc_approved: boolean;
   fee: Money;
   fee_min: Money;
   promised_reach: number;

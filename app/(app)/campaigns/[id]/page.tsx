@@ -50,6 +50,9 @@ export default function AssignmentDetailPage() {
   if (!a) return <div className="card p-8 text-center text-muted">This assignment was not found.</div>;
 
   const submittable = a.status === 'IN_PROGRESS' || a.status === 'REJECTED';
+  const isUgc = a.service_type === 'UGC';
+  // UGC: a reach proof is only allowed once the client has approved a piece of content.
+  const canSubmitProof = submittable && (!isUgc || a.ugc_approved);
   const underReview = a.status === 'SUBMITTED';
   const done = a.status === 'PAID' || a.status === 'APPROVED';
   const rejected = a.latest_verdict === 'REJECTED';
@@ -171,17 +174,119 @@ export default function AssignmentDetailPage() {
             </div>
           )}
 
+          {/* UGC: get the content approved by the client before posting + proof. */}
+          {isUgc && (
+            <UgcContentPanel
+              assignmentId={a.id}
+              items={a.ugc_content}
+              approved={a.ugc_approved}
+              onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })}
+            />
+          )}
+
           {/* Submission (step 4) */}
           {a.submission && <SubmissionPreview submission={a.submission} rejected={rejected} done={done} underReview={underReview} />}
 
-          {/* Submit proof */}
-          {submittable && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
+          {/* Submit proof — for UGC, gated until the client has approved a piece. */}
+          {canSubmitProof && <SubmitProof assignmentId={a.id} channelName={channelName} deadline={deadline?.full ?? null} target={a.posts_required > 0 ? Math.round(a.promised_reach / a.posts_required) : a.promised_reach} onDone={() => void qc.invalidateQueries({ queryKey: ['assignment', id] })} />}
           {underReview && !a.submission && <ReviewState />}
           {done && <div className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok-wash p-4 text-[14px] font-semibold text-ok"><IconCheck className="h-[18px] w-[18px] shrink-0" /> Approved and paid to your balance.</div>}
         </>
       )}
     </div>
   );
+}
+
+function UgcContentPanel({ assignmentId, items, approved, onDone }: { assignmentId: string; items: AssignmentDetail['ugc_content']; approved: boolean; onDone: () => void }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const hasPending = items.some((i) => i.status === 'PENDING_CLIENT_REVIEW');
+  const showForm = !approved && !hasPending;
+
+  async function submit() {
+    if (!file && !url.trim()) return setError('Upload your content or paste a link to it.');
+    if (url.trim() && !/^https?:\/\//.test(url)) return setError('That link isn’t a valid URL (https://…).');
+    setBusy(true); setError(null);
+    try {
+      const form = new FormData();
+      if (file) form.append('file', file);
+      if (url.trim()) form.append('public_url', url.trim());
+      if (note.trim()) form.append('note', note.trim());
+      await api.postForm(`/v1/assignments/${assignmentId}/ugc-content`, form);
+      setFile(null); setUrl(''); setNote('');
+      onDone();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Could not submit your content.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-5 rounded-2xl border border-rule bg-paper p-5">
+      <div className="text-[14px] font-extrabold text-ink">Content approval</div>
+      <p className="mt-0.5 text-[13px] text-muted">Create your content and send it to the client to approve. Only post it once it’s approved — then submit your reach proof to get paid.</p>
+
+      {approved ? (
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-ok/30 bg-ok-wash p-3 text-[13.5px] font-semibold text-ok">
+          <IconCheck className="h-[18px] w-[18px] shrink-0" /> Approved — post it to your socials, then submit your reach proof below.
+        </div>
+      ) : hasPending ? (
+        <div className="mt-4 rounded-xl border border-rule bg-wash px-3.5 py-2.5 text-[13.5px] text-body">Waiting for the client to review your content…</div>
+      ) : null}
+
+      {/* History of submitted pieces. */}
+      {items.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {items.map((c) => (
+            <li key={c.id} className="rounded-xl border border-rule px-3.5 py-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <a href={c.file_url ?? c.public_url ?? '#'} target="_blank" rel="noreferrer" className="truncate text-[13px] font-semibold text-brand-700 underline">
+                  {c.public_url ?? 'Uploaded content'}
+                </a>
+                <StatusPill status={ugcStatusLabel(c.status)} />
+              </div>
+              {c.status === 'CLIENT_REJECTED' && c.reject_reason && (
+                <p className="mt-1.5 text-[12.5px] text-body">Client asked for changes: {c.reject_reason}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {showForm && (
+        <div className="mt-4 space-y-3">
+          <input ref={inputRef} type="file" accept="image/*,video/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-rule bg-wash/50 px-4 py-6 text-center transition hover:border-brand/40"
+          >
+            <IconUpload className="h-5 w-5 text-muted" />
+            <span className="text-[13.5px] font-semibold text-ink">{file ? file.name : 'Upload your content (image or video)'}</span>
+          </button>
+          <Field label="…or paste a link">
+            <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://drive.google.com/…" />
+          </Field>
+          <Field label="Note to the client (optional)">
+            <textarea className="input min-h-[70px] resize-y" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Here’s my first cut — happy to tweak." />
+          </Field>
+          {error && <div className="rounded-xl border border-brand/20 bg-brand/5 px-3.5 py-2.5 text-[13px] text-brand-700">{error}</div>}
+          <Button loading={busy} onClick={submit}>Send for approval <IconArrowRight className="h-4 w-4" /></Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ugcStatusLabel(s: AssignmentDetail['ugc_content'][number]['status']): string {
+  if (s === 'CLIENT_APPROVED') return 'Approved';
+  if (s === 'CLIENT_REJECTED') return 'Changes requested';
+  return 'In review';
 }
 
 function Step({ n, title, sub, children }: { n: number; title: string; sub: string; children?: React.ReactNode }) {
